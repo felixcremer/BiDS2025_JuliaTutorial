@@ -1,0 +1,6 @@
+---
+title: "About"
+---
+
+This is the material for the Julia Tutorial happening at Big Data from Space 2025 in Riga.
+This tutorial has been developed in the NFDI4Earth Measure 2.5.

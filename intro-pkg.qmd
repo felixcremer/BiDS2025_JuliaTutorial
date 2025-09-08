@@ -1,0 +1,65 @@
+---
+title: Introduction to the Package Manager
+---
+
+This is only a small glimpse in the Julia package manager. 
+For an in depth intro see [Pkg.jl and Julia Environments for Beginners](https://jkrumbiegel.com/pages/2022-08-26-pkg-introduction/).
+
+# REPL package manager mode
+
+There are two ways to interact with the package manager.
+Either programmatically by loading it in via `using Pkg` or by switching to the pkg mode in the REPL.
+Here we will use the REPL mode. 
+To switch to the pkg mode use the closing square bracket.
+```julia
+]
+```
+
+This will switch the prompt of your REPL and now you can do package management tasks.
+
+::: {.callout-note}
+From now on we will assume you are in the pkg REPL mode
+:::
+
+- get some help
+```julia
+help
+```
+
+## Activating your environment
+
+- Activate your 
+```julia
+activate .
+# You can use any path that is on your computer
+```
+
+- See what is installed
+```julia
+st
+```
+- Download all installed packages
+```julia
+instantiate
+```
+
+## Package handling
+- Add a package
+```julia
+add Example
+```
+- Remove a package
+```julia
+rm Example
+```
+- Update packages
+```julia
+up
+up PackageName
+```
+
+### Further reading
+
+- [Pkg.jl documentation]()
+- [Pkg.jl and Julia Environments for Beginners](https://jkrumbiegel.com/pages/2022-08-26-pkg-introduction/)
+- [Modern Julia workflows on environments](https://modernjuliaworkflows.org/writing/#environments)

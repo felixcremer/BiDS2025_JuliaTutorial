@@ -1,0 +1,365 @@
+---
+title: "Introduction to Julia"
+---
+
+# Why Julia?
+
+# Basics of Julia programming
+
+```{julia}
+# Simple math
+x = 5
+y = 2
+x + y
+```
+
+```{julia}
+# Vector math
+x = [1,2,3,4]
+y = [2.5,3.5,1.0,2.9]
+x + y
+```
+
+```{julia}
+# Functions look like math
+f(x) = 2x^2 + sin(x)
+f(5)
+```
+
+```{julia}
+# Apply a function element-wise
+f.(x)
+```
+
+```{julia}
+# Always be explicit when applying function vectorized
+sin.([1.0,2.0,3.0])
+```
+
+```{julia}
+# Matrix math
+m = rand(4,3)
+n = ones(3,5)
+m*n
+```
+
+### So what is special about Julia?
+
+```{julia}
+function mysum(x)
+    s = zero(eltype(x))
+    for ix in x
+        s = s+ix
+    end
+    return s
+end
+vec = rand(1000000)
+@time mysum(vec)
+@time mysum(vec)
+```
+
+
+## Variables
+
+```{julia}
+# Variables are names (tags, stickers) for Julia objects
+x = 2
+y = x
+x = 3
+x, y 
+```
+
+
+
+## Data types
+
+### Built-in Data types
+
+```{julia}
+#Numeric data types
+for T in (UInt8, UInt16, UInt32, UInt64, Int8, Int16, Int32, Int64, 
+          Float16, Float32, Float64, ComplexF16, ComplexF32, ComplexF64)
+    @show T(5)
+end
+```
+
+```{julia}
+@show typeof([1,2,3])
+@show typeof([1.0,2.0,3.0])
+```
+
+### Custom data types
+
+`struct`s are basic types composing several fields into a single object.
+
+```{julia}
+struct PointF
+x::Float64
+y::Float64
+end
+p = PointF(2.0,3.0)
+```
+
+The fields of a struct may or may not be typed
+
+```{julia}
+struct PointUntyped
+x
+y
+end
+p = PointUntyped(2.f0, 3)
+```
+
+```{julia}
+PointUntyped("Hallo", sin)
+```
+
+Parametric types can be used to generic specialized code for a variety
+of field types.
+
+```{julia}
+struct Point{T<:Number}
+x::T
+y::T
+end
+p = Point(3.f0,2.f0)
+```
+
+
+## Loops
+
+Loops are written using the `for` keyword and process any object implementing the [iteration interface](https://docs.julialang.org/en/v1/manual/interfaces/#man-interface-iteration)
+
+```{julia}
+for i in 1:3
+    println(i)
+end
+
+for letter in "hello"
+    println(letter)
+end
+```
+
+## Functions
+
+There are 3 ways to define functions in Julia:
+
+Long form:
+
+```{julia}
+function f1(x, y)
+    return x+y
+end
+```
+
+Note that the `return` keyword is optional. If it is missing, a function always returns the result of the last statement.
+
+Short form:
+
+```{julia}
+f2(x, y) = x + y
+```
+
+Very useful for writing short one-liners.
+
+Anonymous functions (similar to lambdas in python), will be important in the Functional Programming section:
+
+```{julia}
+f3 = (x,y) -> x + y
+```
+
+They all define the same function:
+
+```{julia}
+f1(1,2) == f2(1,2) == f3(1,2) == 3
+```
+
+## Multiple Dispatch
+
+In object-oriented programming languages methods (behavior) are part of the class namespace itself and can be used to implement generic behavior.
+
+```{python}
+class Point():
+    def __init__(self,x,y):
+        self.x = x
+        self.y = y
+
+    def abs(self):
+        return self.x*self.x + self.y*self.y
+
+p = Point(3,2)
+p.abs()
+```
+
+In Julia, functions are first-class objects and can have multiple methods for different combinations of argument types.
+
+```{julia}
+absolute(p::Point) = p.x^2 + p.y^2
+```
+
+This defines a new function `absolute` with a single method
+
+```{julia}
+methods(absolute)
+```
+
+```{julia}
+@show absolute(Point(2,3))
+@show absolute(Point(2.0,3.0))
+```
+
+In addition to defining new functions, existing functions can be extended to work for our custom data types:
+
+```{julia}
+import Base: +, -, *, /, zero, one, oneunit
++(p1::Point, p2::Point) = Point(p1.x+p2.x, p1.y+p2.y)
+-(p1::Point, p2::Point) = Point(p1.x-p2.x, p1.y-p2.y)
+*(x::Number, p::Point) = Point(x*p.x, x*p.y)
+/(p::Point,x::Number) = Point(p.x/x,p.y/x)
+-(p::Point) = Point(-p.x,-p.y)
+zero(x::Point{T}) where T = zero(typeof(x))
+zero(::Type{Point{T}}) where T = Point(zero(T),zero(T))
+one(x::Point{T}) where T = one(typeof(x))
+one(::Type{Point{T}}) where T = Point(one(T),one(T))
+Point{T}(p::Point) where T = Point{T}(T(p.x),T(p.y))
+```
+
+Now that we have defined some basic math around the Point type we can use a lot of generic behavior:
+
+```{julia}
+#Create zero matrix of Points
+zeros(Point{Float64},3,2)
+```
+
+```{julia}
+#Diagonal matrices
+pointvec = (1:3) .* ones(Point{Float64})
+```
+
+```{julia}
+using LinearAlgebra
+diagm(0=>pointvec)
+```
+
+```{julia}
+rand(4,5) * ones(Point{Float64},5,2)
+```
+
+```{julia}
+range(Point(-1.0,-2.0),Point(3.0,4.0),length=10)
+```
+
+
+
+# Package management
+
+# Functional Programming
+
+Transform an array by applying the same function to every element. We can do this using a loop:
+
+```{julia}
+a = rand(100)
+out = similar(a)
+for i in eachindex(a)
+    out[i] = sqrt(a[i])
+end
+out
+```
+
+In the end we "map" a function over an array, so the following does the same as our loop defined above. 
+
+```{julia}
+map(sqrt,a)
+```
+
+There is also the very similar `broadcast` function:
+
+```{julia}
+broadcast(sqrt,a)
+```
+
+Instead of calling the broadcast function explicitly, most Julia programmers would use the shorthand dot-syntax:
+
+```{julia}
+sqrt.(a)
+```
+
+which gets translated to the former expression when lowering the code. 
+
+## Differences between broadcast and map
+
+For single-argument functions there is no difference between map and broadcast. However, the functions differe in behavior when mutiple arguments are passed:
+
+```{julia}
+a = [0.1, 0.2, 0.3]
+b = [1.0 2.0 3.0]
+@show size(a)
+@show size(b)
+@show map(+,a,b)
+@show broadcast(+,a,b)
+@show a .+ b
+nothing
+```
+
+`map`
+- iterates over all arguments separately, and passing them one by one to the applied function
+- agnostic of array shapes
+
+`broadcast`
+- is dimension-aware
+- matches lengths of arrays along each array dimension
+- expanding dimensions of length 1 or non-existing dimensions at the end
+
+In most cases one uses broadcast because it is easier to type using the dot-notation.
+
+### `reduce` and `foldl`
+
+```{julia}
+reduce(+,1:10)
+```
+
+What is happening behind the scenes?
+
+```{julia}
+function myplus(x,y)
+    @show x,y
+    return x+y
+end
+reduce(myplus,1:10)
+```
+
+`foldl` is very similar to reduce, but with left-associativty guaranteed (all elements of the array will be processed strictly in order), makes parallelization impossible.
+
+Example task: find the longest streak of true values in a Bool array.
+
+```{julia}
+function streak(oldstate,newvalue)
+    maxstreak, currentstreak = oldstate
+    if newvalue #We extend the streak by 1
+        currentstreak += 1
+        maxstreak = max(currentstreak, maxstreak)
+    else
+        currentstreak = 0
+    end
+    return (maxstreak,currentstreak)
+end
+x = rand(Bool,1000)
+foldl(streak,x,init=(0,0))
+```
+
+`mapreduce` and `mapfoldl` combine both `map` and reduce. For example, to compute the sum of squares of a vector one can do:
+
+```{julia}
+r = rand(1000)
+mapreduce(x->x*x,+,r)
+```
+
+To compute the longest streak of random numbers larger than 0.9 we could do:
+
+```{julia}
+mapfoldl(>(0.1),streak,r,init=(0,0))
+```
+
+# Allocations
+
+Last exercise: In a vector of numbers, count how often a consecutive value is larger than its predecessor. 

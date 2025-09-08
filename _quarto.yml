@@ -1,0 +1,33 @@
+project:
+  type: website
+execute:
+  freeze: auto
+website:
+  title: "Julia Tutorial BiDS 2025"
+  navbar:
+    right:
+      - href: index.qmd
+        text: Home
+      - about.qmd
+  sidebar:
+    style: "docked"
+    search: true
+    contents:
+    - section: "Julia Introduction"
+      contents:
+      - intro-julia.qmd
+      - intro-repl.qmd
+      - href: intro-pkg.qmd
+        text: Package Manager
+    - section: "Raster data analysis"
+      contents:
+      - DimensionalData.qmd
+      - DimensionalEngine.qmd
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+
+
+

@@ -1,0 +1,9 @@
+---
+title: "Working in the REPL"
+---
+
+## Different REPL modes
+
+### Further reading 
+
+For a more in depth introduction and more tips and tricks see the [REPL Mastery workshop](https://github.com/miguelraz/REPLMasteryWorkshop) from JuliaCon 2022.
