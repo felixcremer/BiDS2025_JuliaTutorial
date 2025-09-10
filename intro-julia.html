@@ -6,8 +6,12 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Felix Cremer">
+<meta name="author" content="Lazaro Alonso">
+<meta name="author" content="Anshul Singhvi">
+<meta name="author" content="Fabian Gans">
 
-<title>Introduction to Julia – Julia Tutorial BiDS 2025</title>
+<title>Introduction to Julia – Julia for large scale geospatial analysis</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -65,16 +69,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
+<link href="./logo.svg" rel="icon" type="image/svg+xml">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-dark-befe23ebd2f54d8af2c8a89d1a1611f1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-94599a0eca3b0000ac8b8cb7c63e4b76.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-e71f1ede82535bde82a00eb58881d6a9.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-dark-eb6207cc1d9ea05b692dbf91e7a8eb86.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-e71f1ede82535bde82a00eb58881d6a9.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -107,10 +116,171 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
 
-<link rel="stylesheet" href="styles.css">
 </head>
 
-<body class="nav-sidebar docked nav-fixed quarto-light">
+<body class="nav-sidebar docked nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -118,7 +288,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">Julia Tutorial BiDS 2025</span>
+    <span class="navbar-title">Julia for large scale geospatial analysis</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
@@ -138,6 +308,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
           </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
+    <a href="https://github.com/felixcremer/BiDS2025_JuliaTutorial" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
 </div>
       </div> <!-- /container-fluid -->
     </nav>
@@ -222,34 +394,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#why-julia" id="toc-why-julia" class="nav-link active" data-scroll-target="#why-julia">Why Julia?</a></li>
-  <li><a href="#basics-of-julia-programming" id="toc-basics-of-julia-programming" class="nav-link" data-scroll-target="#basics-of-julia-programming">Basics of Julia programming</a>
+  <li><a href="#why-julia" id="toc-why-julia" class="nav-link active" data-scroll-target="#why-julia"><span class="header-section-number">1</span> Why Julia?</a></li>
+  <li><a href="#basics-of-julia-programming" id="toc-basics-of-julia-programming" class="nav-link" data-scroll-target="#basics-of-julia-programming"><span class="header-section-number">2</span> Basics of Julia programming</a>
   <ul class="collapse">
-  <li><a href="#so-what-is-special-about-julia" id="toc-so-what-is-special-about-julia" class="nav-link" data-scroll-target="#so-what-is-special-about-julia">So what is special about Julia?</a></li>
-  <li><a href="#variables" id="toc-variables" class="nav-link" data-scroll-target="#variables">Variables</a></li>
-  <li><a href="#data-types" id="toc-data-types" class="nav-link" data-scroll-target="#data-types">Data types</a>
+  <li><a href="#so-what-is-special-about-julia" id="toc-so-what-is-special-about-julia" class="nav-link" data-scroll-target="#so-what-is-special-about-julia"><span class="header-section-number">2.0.1</span> So what is special about Julia?</a></li>
+  <li><a href="#variables" id="toc-variables" class="nav-link" data-scroll-target="#variables"><span class="header-section-number">2.1</span> Variables</a></li>
+  <li><a href="#data-types" id="toc-data-types" class="nav-link" data-scroll-target="#data-types"><span class="header-section-number">2.2</span> Data types</a>
   <ul class="collapse">
-  <li><a href="#built-in-data-types" id="toc-built-in-data-types" class="nav-link" data-scroll-target="#built-in-data-types">Built-in Data types</a></li>
-  <li><a href="#custom-data-types" id="toc-custom-data-types" class="nav-link" data-scroll-target="#custom-data-types">Custom data types</a></li>
+  <li><a href="#built-in-data-types" id="toc-built-in-data-types" class="nav-link" data-scroll-target="#built-in-data-types"><span class="header-section-number">2.2.1</span> Built-in Data types</a></li>
+  <li><a href="#custom-data-types" id="toc-custom-data-types" class="nav-link" data-scroll-target="#custom-data-types"><span class="header-section-number">2.2.2</span> Custom data types</a></li>
   </ul></li>
-  <li><a href="#loops" id="toc-loops" class="nav-link" data-scroll-target="#loops">Loops</a></li>
-  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions">Functions</a></li>
-  <li><a href="#multiple-dispatch" id="toc-multiple-dispatch" class="nav-link" data-scroll-target="#multiple-dispatch">Multiple Dispatch</a></li>
+  <li><a href="#loops" id="toc-loops" class="nav-link" data-scroll-target="#loops"><span class="header-section-number">2.3</span> Loops</a></li>
+  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions"><span class="header-section-number">2.4</span> Functions</a></li>
+  <li><a href="#multiple-dispatch" id="toc-multiple-dispatch" class="nav-link" data-scroll-target="#multiple-dispatch"><span class="header-section-number">2.5</span> Multiple Dispatch</a></li>
   </ul></li>
-  <li><a href="#package-management" id="toc-package-management" class="nav-link" data-scroll-target="#package-management">Package management</a></li>
-  <li><a href="#functional-programming" id="toc-functional-programming" class="nav-link" data-scroll-target="#functional-programming">Functional Programming</a>
+  <li><a href="#package-management" id="toc-package-management" class="nav-link" data-scroll-target="#package-management"><span class="header-section-number">3</span> Package management</a></li>
+  <li><a href="#functional-programming" id="toc-functional-programming" class="nav-link" data-scroll-target="#functional-programming"><span class="header-section-number">4</span> Functional Programming</a>
   <ul class="collapse">
-  <li><a href="#differences-between-broadcast-and-map" id="toc-differences-between-broadcast-and-map" class="nav-link" data-scroll-target="#differences-between-broadcast-and-map">Differences between broadcast and map</a>
+  <li><a href="#differences-between-broadcast-and-map" id="toc-differences-between-broadcast-and-map" class="nav-link" data-scroll-target="#differences-between-broadcast-and-map"><span class="header-section-number">4.1</span> Differences between broadcast and map</a>
   <ul class="collapse">
-  <li><a href="#reduce-and-foldl" id="toc-reduce-and-foldl" class="nav-link" data-scroll-target="#reduce-and-foldl"><code>reduce</code> and <code>foldl</code></a></li>
+  <li><a href="#reduce-and-foldl" id="toc-reduce-and-foldl" class="nav-link" data-scroll-target="#reduce-and-foldl"><span class="header-section-number">4.1.1</span> <code>reduce</code> and <code>foldl</code></a></li>
   </ul></li>
   </ul></li>
-  <li><a href="#allocations" id="toc-allocations" class="nav-link" data-scroll-target="#allocations">Allocations</a></li>
+  <li><a href="#allocations" id="toc-allocations" class="nav-link" data-scroll-target="#allocations"><span class="header-section-number">5</span> Allocations</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
+
 
 <header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./intro-julia.html">Julia Introduction</a></li><li class="breadcrumb-item"><a href="./intro-julia.html">Introduction to Julia</a></li></ol></nav>
 <div class="quarto-title">
@@ -257,10 +430,47 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 
 
+<div class="quarto-title-meta-author">
+  <div class="quarto-title-meta-heading">Authors</div>
+  <div class="quarto-title-meta-heading">Affiliations</div>
+  
+    <div class="quarto-title-meta-contents">
+    <p class="author">Felix Cremer </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Max Planck Institute for Biogeochemistry
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Lazaro Alonso </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Max Planck Institute for Biogeochemistry
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Anshul Singhvi </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            JuliaHub
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Fabian Gans </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Max Planck Institute for Biogeochemistry
+          </p>
+      </div>
+  </div>
 
 <div class="quarto-title-meta">
 
-    
+      
   
     
   </div>
@@ -270,11 +480,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="why-julia" class="level1">
-<h1>Why Julia?</h1>
+<section id="why-julia" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Why Julia?</h1>
 </section>
-<section id="basics-of-julia-programming" class="level1">
-<h1>Basics of Julia programming</h1>
+<section id="basics-of-julia-programming" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Basics of Julia programming</h1>
 <div id="f9fd0b81" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Simple math</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> <span class="fl">5</span></span>
@@ -339,8 +549,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  2.01026  2.01026  2.01026  2.01026  2.01026</code></pre>
 </div>
 </div>
-<section id="so-what-is-special-about-julia" class="level3">
-<h3 class="anchored" data-anchor-id="so-what-is-special-about-julia">So what is special about Julia?</h3>
+<section id="so-what-is-special-about-julia" class="level3" data-number="2.0.1">
+<h3 data-number="2.0.1" class="anchored" data-anchor-id="so-what-is-special-about-julia"><span class="header-section-number">2.0.1</span> So what is special about Julia?</h3>
 <div id="1180b876" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="fu">mysum</span>(x)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    s <span class="op">=</span> <span class="fu">zero</span>(<span class="fu">eltype</span>(x))</span>
@@ -361,8 +571,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </section>
-<section id="variables" class="level2">
-<h2 class="anchored" data-anchor-id="variables">Variables</h2>
+<section id="variables" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="variables"><span class="header-section-number">2.1</span> Variables</h2>
 <div id="7b9f39a5" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Variables are names (tags, stickers) for Julia objects</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> <span class="fl">2</span></span>
@@ -374,10 +584,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </section>
-<section id="data-types" class="level2">
-<h2 class="anchored" data-anchor-id="data-types">Data types</h2>
-<section id="built-in-data-types" class="level3">
-<h3 class="anchored" data-anchor-id="built-in-data-types">Built-in Data types</h3>
+<section id="data-types" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="data-types"><span class="header-section-number">2.2</span> Data types</h2>
+<section id="built-in-data-types" class="level3" data-number="2.2.1">
+<h3 data-number="2.2.1" class="anchored" data-anchor-id="built-in-data-types"><span class="header-section-number">2.2.1</span> Built-in Data types</h3>
 <div id="20c41ec8" class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Numeric data types</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> T <span class="kw">in</span> (<span class="dt">UInt8</span>, <span class="dt">UInt16</span>, <span class="dt">UInt32</span>, <span class="dt">UInt64</span>, <span class="dt">Int8</span>, <span class="dt">Int16</span>, <span class="dt">Int32</span>, <span class="dt">Int64</span>, </span>
@@ -415,8 +625,8 @@ typeof([1.0, 2.0, 3.0]) = Vector{Float64}</code></pre>
 </div>
 </div>
 </section>
-<section id="custom-data-types" class="level3">
-<h3 class="anchored" data-anchor-id="custom-data-types">Custom data types</h3>
+<section id="custom-data-types" class="level3" data-number="2.2.2">
+<h3 data-number="2.2.2" class="anchored" data-anchor-id="custom-data-types"><span class="header-section-number">2.2.2</span> Custom data types</h3>
 <p><code>struct</code>s are basic types composing several fields into a single object.</p>
 <div id="da57910c" class="cell" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> PointF</span>
@@ -458,8 +668,8 @@ typeof([1.0, 2.0, 3.0]) = Vector{Float64}</code></pre>
 </div>
 </section>
 </section>
-<section id="loops" class="level2">
-<h2 class="anchored" data-anchor-id="loops">Loops</h2>
+<section id="loops" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="loops"><span class="header-section-number">2.3</span> Loops</h2>
 <p>Loops are written using the <code>for</code> keyword and process any object implementing the <a href="https://docs.julialang.org/en/v1/manual/interfaces/#man-interface-iteration">iteration interface</a></p>
 <div id="840279a3" class="cell" data-execution_count="15">
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span></span>
@@ -481,8 +691,8 @@ o</code></pre>
 </div>
 </div>
 </section>
-<section id="functions" class="level2">
-<h2 class="anchored" data-anchor-id="functions">Functions</h2>
+<section id="functions" class="level2" data-number="2.4">
+<h2 data-number="2.4" class="anchored" data-anchor-id="functions"><span class="header-section-number">2.4</span> Functions</h2>
 <p>There are 3 ways to define functions in Julia:</p>
 <p>Long form:</p>
 <div id="913d1b0e" class="cell" data-execution_count="16">
@@ -517,8 +727,8 @@ o</code></pre>
 </div>
 </div>
 </section>
-<section id="multiple-dispatch" class="level2">
-<h2 class="anchored" data-anchor-id="multiple-dispatch">Multiple Dispatch</h2>
+<section id="multiple-dispatch" class="level2" data-number="2.5">
+<h2 data-number="2.5" class="anchored" data-anchor-id="multiple-dispatch"><span class="header-section-number">2.5</span> Multiple Dispatch</h2>
 <p>In object-oriented programming languages methods (behavior) are part of the class namespace itself and can be used to implement generic behavior.</p>
 <pre class="{python}"><code>class Point():
     def __init__(self,x,y):
@@ -619,11 +829,11 @@ absolute(Point(2.0, 3.0)) = 13.0</code></pre>
 </div>
 </section>
 </section>
-<section id="package-management" class="level1">
-<h1>Package management</h1>
+<section id="package-management" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Package management</h1>
 </section>
-<section id="functional-programming" class="level1">
-<h1>Functional Programming</h1>
+<section id="functional-programming" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Functional Programming</h1>
 <p>Transform an array by applying the same function to every element. We can do this using a loop:</p>
 <div id="e112c519" class="cell" data-execution_count="29">
 <div class="sourceCode cell-code" id="cb58"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>a <span class="op">=</span> <span class="fu">rand</span>(<span class="fl">100</span>)</span>
@@ -762,8 +972,8 @@ absolute(Point(2.0, 3.0)) = 13.0</code></pre>
 </div>
 </div>
 <p>which gets translated to the former expression when lowering the code.</p>
-<section id="differences-between-broadcast-and-map" class="level2">
-<h2 class="anchored" data-anchor-id="differences-between-broadcast-and-map">Differences between broadcast and map</h2>
+<section id="differences-between-broadcast-and-map" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="differences-between-broadcast-and-map"><span class="header-section-number">4.1</span> Differences between broadcast and map</h2>
 <p>For single-argument functions there is no difference between map and broadcast. However, the functions differe in behavior when mutiple arguments are passed:</p>
 <div id="46f7916a" class="cell" data-execution_count="33">
 <div class="sourceCode cell-code" id="cb66"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>a <span class="op">=</span> [<span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.3</span>]</span>
@@ -785,8 +995,8 @@ a .+ b = [1.1 2.1 3.1; 1.2 2.2 3.2; 1.3 2.3 3.3]</code></pre>
 <p><code>map</code> - iterates over all arguments separately, and passing them one by one to the applied function - agnostic of array shapes</p>
 <p><code>broadcast</code> - is dimension-aware - matches lengths of arrays along each array dimension - expanding dimensions of length 1 or non-existing dimensions at the end</p>
 <p>In most cases one uses broadcast because it is easier to type using the dot-notation.</p>
-<section id="reduce-and-foldl" class="level3">
-<h3 class="anchored" data-anchor-id="reduce-and-foldl"><code>reduce</code> and <code>foldl</code></h3>
+<section id="reduce-and-foldl" class="level3" data-number="4.1.1">
+<h3 data-number="4.1.1" class="anchored" data-anchor-id="reduce-and-foldl"><span class="header-section-number">4.1.1</span> <code>reduce</code> and <code>foldl</code></h3>
 <div id="ee3cc84b" class="cell" data-execution_count="34">
 <div class="sourceCode cell-code" id="cb68"><pre class="sourceCode julia code-with-copy"><code class="sourceCode julia"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="fu">reduce</span>(<span class="op">+</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="35">
@@ -852,8 +1062,8 @@ a .+ b = [1.1 2.1 3.1; 1.2 2.2 3.2; 1.3 2.3 3.3]</code></pre>
 </section>
 </section>
 </section>
-<section id="allocations" class="level1">
-<h1>Allocations</h1>
+<section id="allocations" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Allocations</h1>
 <p>Last exercise: In a vector of numbers, count how often a consecutive value is larger than its predecessor.</p>
 
 
@@ -862,6 +1072,19 @@ a .+ b = [1.1 2.1 3.1; 1.2 2.2 3.2; 1.3 2.3 3.3]</code></pre>
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
     const icon = "";
     const anchorJS = new window.AnchorJS();
     anchorJS.options = {

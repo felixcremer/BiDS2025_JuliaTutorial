@@ -26,16 +26,30 @@
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "BiDS2025_JuliaTutorial",
+    "title": "Julia for large scale geospatial analysis",
     "section": "",
-    "text": "This is a Quarto website.\nTo learn more about Quarto websites visit https://quarto.org/docs/websites."
+    "text": "This is the website of the “Julia for large scale geospatial analysis” tutorial at the BiDS 2025 conference.\nIn this tutorial we will explore how to analyse raster data which is larger than RAM."
+  },
+  {
+    "objectID": "index.html#preparation",
+    "href": "index.html#preparation",
+    "title": "Julia for large scale geospatial analysis",
+    "section": "1 Preparation",
+    "text": "1 Preparation\nTo participate in the hands-on parts of the tutorial please install Julia on your device. We recommend to use the juliaup installer for julia.\n\nWindowsMac or Linux\n\n\nYou can install juliaup via the windows store or by executing\nwinget install julia -s msstore\n\n\nTo install juliaup in Linux or Mac execute the following in a shell\ncurl -fsSL https://install.julialang.org | sh"
+  },
+  {
+    "objectID": "index.html#schedule",
+    "href": "index.html#schedule",
+    "title": "Julia for large scale geospatial analysis",
+    "section": "2 Schedule",
+    "text": "2 Schedule\n\n\n\nTime\nTopic\n\n\n\n\n14:00\nIntroduction to Julia\n\n\n14:30\nJulia Geo Ecosystem\n\n\n15:00\nRaster Data Loading\n\n\n15:30\nCoffee Break\n\n\n15:50\nRaster data analysis\n\n\n16:10\nHands-On Challenge\n\n\n\nThis timeline is purely approximate and given for indication purpose only. We will adjust depending on the audience. There will be additional breaks (5 minutes) regularly and time for questions during the workshop."
   },
   {
     "objectID": "intro-julia.html#variables",
     "href": "intro-julia.html#variables",
     "title": "Introduction to Julia",
-    "section": "Variables",
-    "text": "Variables\n\n# Variables are names (tags, stickers) for Julia objects\nx = 2\ny = x\nx = 3\nx, y \n\n(3, 2)",
+    "section": "2.1 Variables",
+    "text": "2.1 Variables\n\n# Variables are names (tags, stickers) for Julia objects\nx = 2\ny = x\nx = 3\nx, y \n\n(3, 2)",
     "crumbs": [
       "Home",
       "Julia Introduction",
@@ -46,8 +60,8 @@
     "objectID": "intro-julia.html#data-types",
     "href": "intro-julia.html#data-types",
     "title": "Introduction to Julia",
-    "section": "Data types",
-    "text": "Data types\n\nBuilt-in Data types\n\n#Numeric data types\nfor T in (UInt8, UInt16, UInt32, UInt64, Int8, Int16, Int32, Int64, \n          Float16, Float32, Float64, ComplexF16, ComplexF32, ComplexF64)\n    @show T(5)\nend\n\nT(5) = 0x05\nT(5) = 0x0005\nT(5) = 0x00000005\nT(5) = 0x0000000000000005\nT(5) = 5\nT(5) = 5\nT(5) = 5\nT(5) = 5\nT(5) = Float16(5.0)\nT(5) = 5.0f0\nT(5) = 5.0\nT(5) = Float16(5.0) + Float16(0.0)im\nT(5) = 5.0f0 + 0.0f0im\nT(5) = 5.0 + 0.0im\n\n\n\n@show typeof([1,2,3])\n@show typeof([1.0,2.0,3.0])\n\ntypeof([1, 2, 3]) = Vector{Int64}\ntypeof([1.0, 2.0, 3.0]) = Vector{Float64}\n\n\n\nVector{Float64} (alias for Array{Float64, 1})\n\n\n\n\n\nCustom data types\nstructs are basic types composing several fields into a single object.\n\nstruct PointF\nx::Float64\ny::Float64\nend\np = PointF(2.0,3.0)\n\nPointF(2.0, 3.0)\n\n\nThe fields of a struct may or may not be typed\n\nstruct PointUntyped\nx\ny\nend\np = PointUntyped(2.f0, 3)\n\nPointUntyped(2.0f0, 3)\n\n\n\nPointUntyped(\"Hallo\", sin)\n\nPointUntyped(\"Hallo\", sin)\n\n\nParametric types can be used to generic specialized code for a variety of field types.\n\nstruct Point{T&lt;:Number}\nx::T\ny::T\nend\np = Point(3.f0,2.f0)\n\nPoint{Float32}(3.0f0, 2.0f0)",
+    "section": "2.2 Data types",
+    "text": "2.2 Data types\n\n2.2.1 Built-in Data types\n\n#Numeric data types\nfor T in (UInt8, UInt16, UInt32, UInt64, Int8, Int16, Int32, Int64, \n          Float16, Float32, Float64, ComplexF16, ComplexF32, ComplexF64)\n    @show T(5)\nend\n\nT(5) = 0x05\nT(5) = 0x0005\nT(5) = 0x00000005\nT(5) = 0x0000000000000005\nT(5) = 5\nT(5) = 5\nT(5) = 5\nT(5) = 5\nT(5) = Float16(5.0)\nT(5) = 5.0f0\nT(5) = 5.0\nT(5) = Float16(5.0) + Float16(0.0)im\nT(5) = 5.0f0 + 0.0f0im\nT(5) = 5.0 + 0.0im\n\n\n\n@show typeof([1,2,3])\n@show typeof([1.0,2.0,3.0])\n\ntypeof([1, 2, 3]) = Vector{Int64}\ntypeof([1.0, 2.0, 3.0]) = Vector{Float64}\n\n\n\nVector{Float64} (alias for Array{Float64, 1})\n\n\n\n\n\n2.2.2 Custom data types\nstructs are basic types composing several fields into a single object.\n\nstruct PointF\nx::Float64\ny::Float64\nend\np = PointF(2.0,3.0)\n\nPointF(2.0, 3.0)\n\n\nThe fields of a struct may or may not be typed\n\nstruct PointUntyped\nx\ny\nend\np = PointUntyped(2.f0, 3)\n\nPointUntyped(2.0f0, 3)\n\n\n\nPointUntyped(\"Hallo\", sin)\n\nPointUntyped(\"Hallo\", sin)\n\n\nParametric types can be used to generic specialized code for a variety of field types.\n\nstruct Point{T&lt;:Number}\nx::T\ny::T\nend\np = Point(3.f0,2.f0)\n\nPoint{Float32}(3.0f0, 2.0f0)",
     "crumbs": [
       "Home",
       "Julia Introduction",
@@ -58,8 +72,8 @@
     "objectID": "intro-julia.html#loops",
     "href": "intro-julia.html#loops",
     "title": "Introduction to Julia",
-    "section": "Loops",
-    "text": "Loops\nLoops are written using the for keyword and process any object implementing the iteration interface\n\nfor i in 1:3\n    println(i)\nend\n\nfor letter in \"hello\"\n    println(letter)\nend\n\n1\n2\n3\nh\ne\nl\nl\no",
+    "section": "2.3 Loops",
+    "text": "2.3 Loops\nLoops are written using the for keyword and process any object implementing the iteration interface\n\nfor i in 1:3\n    println(i)\nend\n\nfor letter in \"hello\"\n    println(letter)\nend\n\n1\n2\n3\nh\ne\nl\nl\no",
     "crumbs": [
       "Home",
       "Julia Introduction",
@@ -70,8 +84,8 @@
     "objectID": "intro-julia.html#functions",
     "href": "intro-julia.html#functions",
     "title": "Introduction to Julia",
-    "section": "Functions",
-    "text": "Functions\nThere are 3 ways to define functions in Julia:\nLong form:\n\nfunction f1(x, y)\n    return x+y\nend\n\nf1 (generic function with 1 method)\n\n\nNote that the return keyword is optional. If it is missing, a function always returns the result of the last statement.\nShort form:\n\nf2(x, y) = x + y\n\nf2 (generic function with 1 method)\n\n\nVery useful for writing short one-liners.\nAnonymous functions (similar to lambdas in python), will be important in the Functional Programming section:\n\nf3 = (x,y) -&gt; x + y\n\n#11 (generic function with 1 method)\n\n\nThey all define the same function:\n\nf1(1,2) == f2(1,2) == f3(1,2) == 3\n\ntrue",
+    "section": "2.4 Functions",
+    "text": "2.4 Functions\nThere are 3 ways to define functions in Julia:\nLong form:\n\nfunction f1(x, y)\n    return x+y\nend\n\nf1 (generic function with 1 method)\n\n\nNote that the return keyword is optional. If it is missing, a function always returns the result of the last statement.\nShort form:\n\nf2(x, y) = x + y\n\nf2 (generic function with 1 method)\n\n\nVery useful for writing short one-liners.\nAnonymous functions (similar to lambdas in python), will be important in the Functional Programming section:\n\nf3 = (x,y) -&gt; x + y\n\n#11 (generic function with 1 method)\n\n\nThey all define the same function:\n\nf1(1,2) == f2(1,2) == f3(1,2) == 3\n\ntrue",
     "crumbs": [
       "Home",
       "Julia Introduction",
@@ -82,8 +96,8 @@
     "objectID": "intro-julia.html#multiple-dispatch",
     "href": "intro-julia.html#multiple-dispatch",
     "title": "Introduction to Julia",
-    "section": "Multiple Dispatch",
-    "text": "Multiple Dispatch\nIn object-oriented programming languages methods (behavior) are part of the class namespace itself and can be used to implement generic behavior.\nclass Point():\n    def __init__(self,x,y):\n        self.x = x\n        self.y = y\n\n    def abs(self):\n        return self.x*self.x + self.y*self.y\n\np = Point(3,2)\np.abs()\nIn Julia, functions are first-class objects and can have multiple methods for different combinations of argument types.\n\nabsolute(p::Point) = p.x^2 + p.y^2\n\nabsolute (generic function with 1 method)\n\n\nThis defines a new function absolute with a single method\n\nmethods(absolute)\n\n# 1 method for generic function absolute from \u001b[35mMain\u001b[39m: absolute(p::Point) in Main at In[21]:1 \n\n\n\n@show absolute(Point(2,3))\n@show absolute(Point(2.0,3.0))\n\nabsolute(Point(2, 3)) = 13\nabsolute(Point(2.0, 3.0)) = 13.0\n\n\n13.0\n\n\nIn addition to defining new functions, existing functions can be extended to work for our custom data types:\n\nimport Base: +, -, *, /, zero, one, oneunit\n+(p1::Point, p2::Point) = Point(p1.x+p2.x, p1.y+p2.y)\n-(p1::Point, p2::Point) = Point(p1.x-p2.x, p1.y-p2.y)\n*(x::Number, p::Point) = Point(x*p.x, x*p.y)\n/(p::Point,x::Number) = Point(p.x/x,p.y/x)\n-(p::Point) = Point(-p.x,-p.y)\nzero(x::Point{T}) where T = zero(typeof(x))\nzero(::Type{Point{T}}) where T = Point(zero(T),zero(T))\none(x::Point{T}) where T = one(typeof(x))\none(::Type{Point{T}}) where T = Point(one(T),one(T))\nPoint{T}(p::Point) where T = Point{T}(T(p.x),T(p.y))\n\nNow that we have defined some basic math around the Point type we can use a lot of generic behavior:\n\n#Create zero matrix of Points\nzeros(Point{Float64},3,2)\n\n3×2 Matrix{Point{Float64}}:\n Point{Float64}(0.0, 0.0)  Point{Float64}(0.0, 0.0)\n Point{Float64}(0.0, 0.0)  Point{Float64}(0.0, 0.0)\n Point{Float64}(0.0, 0.0)  Point{Float64}(0.0, 0.0)\n\n\n\n#Diagonal matrices\npointvec = (1:3) .* ones(Point{Float64})\n\n3-element Vector{Point{Float64}}:\n Point{Float64}(1.0, 1.0)\n Point{Float64}(2.0, 2.0)\n Point{Float64}(3.0, 3.0)\n\n\n\nusing LinearAlgebra\ndiagm(0=&gt;pointvec)\n\n3×3 Matrix{Point{Float64}}:\n Point{Float64}(1.0, 1.0)  Point{Float64}(0.0, 0.0)  Point{Float64}(0.0, 0.0)\n Point{Float64}(0.0, 0.0)  Point{Float64}(2.0, 2.0)  Point{Float64}(0.0, 0.0)\n Point{Float64}(0.0, 0.0)  Point{Float64}(0.0, 0.0)  Point{Float64}(3.0, 3.0)\n\n\n\nrand(4,5) * ones(Point{Float64},5,2)\n\n4×2 Matrix{Point{Float64}}:\n Point{Float64}(3.6525, 3.6525)    Point{Float64}(3.6525, 3.6525)\n Point{Float64}(1.78177, 1.78177)  Point{Float64}(1.78177, 1.78177)\n Point{Float64}(3.1139, 3.1139)    Point{Float64}(3.1139, 3.1139)\n Point{Float64}(2.26338, 2.26338)  Point{Float64}(2.26338, 2.26338)\n\n\n\nrange(Point(-1.0,-2.0),Point(3.0,4.0),length=10)\n\n10-element LinRange{Point{Float64}, Int64}:\n Point{Float64}(-1.0, -2.0), …, Point{Float64}(3.0, 4.0)",
+    "section": "2.5 Multiple Dispatch",
+    "text": "2.5 Multiple Dispatch\nIn object-oriented programming languages methods (behavior) are part of the class namespace itself and can be used to implement generic behavior.\nclass Point():\n    def __init__(self,x,y):\n        self.x = x\n        self.y = y\n\n    def abs(self):\n        return self.x*self.x + self.y*self.y\n\np = Point(3,2)\np.abs()\nIn Julia, functions are first-class objects and can have multiple methods for different combinations of argument types.\n\nabsolute(p::Point) = p.x^2 + p.y^2\n\nabsolute (generic function with 1 method)\n\n\nThis defines a new function absolute with a single method\n\nmethods(absolute)\n\n# 1 method for generic function absolute from \u001b[35mMain\u001b[39m: absolute(p::Point) in Main at In[21]:1 \n\n\n\n@show absolute(Point(2,3))\n@show absolute(Point(2.0,3.0))\n\nabsolute(Point(2, 3)) = 13\nabsolute(Point(2.0, 3.0)) = 13.0\n\n\n13.0\n\n\nIn addition to defining new functions, existing functions can be extended to work for our custom data types:\n\nimport Base: +, -, *, /, zero, one, oneunit\n+(p1::Point, p2::Point) = Point(p1.x+p2.x, p1.y+p2.y)\n-(p1::Point, p2::Point) = Point(p1.x-p2.x, p1.y-p2.y)\n*(x::Number, p::Point) = Point(x*p.x, x*p.y)\n/(p::Point,x::Number) = Point(p.x/x,p.y/x)\n-(p::Point) = Point(-p.x,-p.y)\nzero(x::Point{T}) where T = zero(typeof(x))\nzero(::Type{Point{T}}) where T = Point(zero(T),zero(T))\none(x::Point{T}) where T = one(typeof(x))\none(::Type{Point{T}}) where T = Point(one(T),one(T))\nPoint{T}(p::Point) where T = Point{T}(T(p.x),T(p.y))\n\nNow that we have defined some basic math around the Point type we can use a lot of generic behavior:\n\n#Create zero matrix of Points\nzeros(Point{Float64},3,2)\n\n3×2 Matrix{Point{Float64}}:\n Point{Float64}(0.0, 0.0)  Point{Float64}(0.0, 0.0)\n Point{Float64}(0.0, 0.0)  Point{Float64}(0.0, 0.0)\n Point{Float64}(0.0, 0.0)  Point{Float64}(0.0, 0.0)\n\n\n\n#Diagonal matrices\npointvec = (1:3) .* ones(Point{Float64})\n\n3-element Vector{Point{Float64}}:\n Point{Float64}(1.0, 1.0)\n Point{Float64}(2.0, 2.0)\n Point{Float64}(3.0, 3.0)\n\n\n\nusing LinearAlgebra\ndiagm(0=&gt;pointvec)\n\n3×3 Matrix{Point{Float64}}:\n Point{Float64}(1.0, 1.0)  Point{Float64}(0.0, 0.0)  Point{Float64}(0.0, 0.0)\n Point{Float64}(0.0, 0.0)  Point{Float64}(2.0, 2.0)  Point{Float64}(0.0, 0.0)\n Point{Float64}(0.0, 0.0)  Point{Float64}(0.0, 0.0)  Point{Float64}(3.0, 3.0)\n\n\n\nrand(4,5) * ones(Point{Float64},5,2)\n\n4×2 Matrix{Point{Float64}}:\n Point{Float64}(3.6525, 3.6525)    Point{Float64}(3.6525, 3.6525)\n Point{Float64}(1.78177, 1.78177)  Point{Float64}(1.78177, 1.78177)\n Point{Float64}(3.1139, 3.1139)    Point{Float64}(3.1139, 3.1139)\n Point{Float64}(2.26338, 2.26338)  Point{Float64}(2.26338, 2.26338)\n\n\n\nrange(Point(-1.0,-2.0),Point(3.0,4.0),length=10)\n\n10-element LinRange{Point{Float64}, Int64}:\n Point{Float64}(-1.0, -2.0), …, Point{Float64}(3.0, 4.0)",
     "crumbs": [
       "Home",
       "Julia Introduction",
@@ -94,8 +108,8 @@
     "objectID": "intro-julia.html#differences-between-broadcast-and-map",
     "href": "intro-julia.html#differences-between-broadcast-and-map",
     "title": "Introduction to Julia",
-    "section": "Differences between broadcast and map",
-    "text": "Differences between broadcast and map\nFor single-argument functions there is no difference between map and broadcast. However, the functions differe in behavior when mutiple arguments are passed:\n\na = [0.1, 0.2, 0.3]\nb = [1.0 2.0 3.0]\n@show size(a)\n@show size(b)\n@show map(+,a,b)\n@show broadcast(+,a,b)\n@show a .+ b\nnothing\n\nsize(a) = (3,)\nsize(b) = (1, 3)\nmap(+, a, b) = [1.1, 2.2, 3.3]\nbroadcast(+, a, b) = [1.1 2.1 3.1; 1.2 2.2 3.2; 1.3 2.3 3.3]\na .+ b = [1.1 2.1 3.1; 1.2 2.2 3.2; 1.3 2.3 3.3]\n\n\nmap - iterates over all arguments separately, and passing them one by one to the applied function - agnostic of array shapes\nbroadcast - is dimension-aware - matches lengths of arrays along each array dimension - expanding dimensions of length 1 or non-existing dimensions at the end\nIn most cases one uses broadcast because it is easier to type using the dot-notation.\n\nreduce and foldl\n\nreduce(+,1:10)\n\n55\n\n\nWhat is happening behind the scenes?\n\nfunction myplus(x,y)\n    @show x,y\n    return x+y\nend\nreduce(myplus,1:10)\n\n(x, y) = (1, 2)\n(x, y) = (3, 3)\n(x, y) = (6, 4)\n(x, y) = (10, 5)\n(x, y) = (15, 6)\n(x, y) = (21, 7)\n(x, y) = (28, 8)\n(x, y) = (36, 9)\n(x, y) = (45, 10)\n\n\n55\n\n\nfoldl is very similar to reduce, but with left-associativty guaranteed (all elements of the array will be processed strictly in order), makes parallelization impossible.\nExample task: find the longest streak of true values in a Bool array.\n\nfunction streak(oldstate,newvalue)\n    maxstreak, currentstreak = oldstate\n    if newvalue #We extend the streak by 1\n        currentstreak += 1\n        maxstreak = max(currentstreak, maxstreak)\n    else\n        currentstreak = 0\n    end\n    return (maxstreak,currentstreak)\nend\nx = rand(Bool,1000)\nfoldl(streak,x,init=(0,0))\n\n(9, 0)\n\n\nmapreduce and mapfoldl combine both map and reduce. For example, to compute the sum of squares of a vector one can do:\n\nr = rand(1000)\nmapreduce(x-&gt;x*x,+,r)\n\n342.00530573304724\n\n\nTo compute the longest streak of random numbers larger than 0.9 we could do:\n\nmapfoldl(&gt;(0.1),streak,r,init=(0,0))\n\n(51, 10)",
+    "section": "4.1 Differences between broadcast and map",
+    "text": "4.1 Differences between broadcast and map\nFor single-argument functions there is no difference between map and broadcast. However, the functions differe in behavior when mutiple arguments are passed:\n\na = [0.1, 0.2, 0.3]\nb = [1.0 2.0 3.0]\n@show size(a)\n@show size(b)\n@show map(+,a,b)\n@show broadcast(+,a,b)\n@show a .+ b\nnothing\n\nsize(a) = (3,)\nsize(b) = (1, 3)\nmap(+, a, b) = [1.1, 2.2, 3.3]\nbroadcast(+, a, b) = [1.1 2.1 3.1; 1.2 2.2 3.2; 1.3 2.3 3.3]\na .+ b = [1.1 2.1 3.1; 1.2 2.2 3.2; 1.3 2.3 3.3]\n\n\nmap - iterates over all arguments separately, and passing them one by one to the applied function - agnostic of array shapes\nbroadcast - is dimension-aware - matches lengths of arrays along each array dimension - expanding dimensions of length 1 or non-existing dimensions at the end\nIn most cases one uses broadcast because it is easier to type using the dot-notation.\n\n4.1.1 reduce and foldl\n\nreduce(+,1:10)\n\n55\n\n\nWhat is happening behind the scenes?\n\nfunction myplus(x,y)\n    @show x,y\n    return x+y\nend\nreduce(myplus,1:10)\n\n(x, y) = (1, 2)\n(x, y) = (3, 3)\n(x, y) = (6, 4)\n(x, y) = (10, 5)\n(x, y) = (15, 6)\n(x, y) = (21, 7)\n(x, y) = (28, 8)\n(x, y) = (36, 9)\n(x, y) = (45, 10)\n\n\n55\n\n\nfoldl is very similar to reduce, but with left-associativty guaranteed (all elements of the array will be processed strictly in order), makes parallelization impossible.\nExample task: find the longest streak of true values in a Bool array.\n\nfunction streak(oldstate,newvalue)\n    maxstreak, currentstreak = oldstate\n    if newvalue #We extend the streak by 1\n        currentstreak += 1\n        maxstreak = max(currentstreak, maxstreak)\n    else\n        currentstreak = 0\n    end\n    return (maxstreak,currentstreak)\nend\nx = rand(Bool,1000)\nfoldl(streak,x,init=(0,0))\n\n(9, 0)\n\n\nmapreduce and mapfoldl combine both map and reduce. For example, to compute the sum of squares of a vector one can do:\n\nr = rand(1000)\nmapreduce(x-&gt;x*x,+,r)\n\n342.00530573304724\n\n\nTo compute the longest streak of random numbers larger than 0.9 we could do:\n\nmapfoldl(&gt;(0.1),streak,r,init=(0,0))\n\n(51, 10)",
     "crumbs": [
       "Home",
       "Julia Introduction",
@@ -108,6 +122,13 @@
     "title": "About",
     "section": "",
     "text": "This is the material for the Julia Tutorial happening at Big Data from Space 2025 in Riga. This tutorial has been developed in the NFDI4Earth Measure 2.5."
+  },
+  {
+    "objectID": "about.html#abstract",
+    "href": "about.html#abstract",
+    "title": "About",
+    "section": "1 Abstract",
+    "text": "1 Abstract\nWe need tools to efficiently analyse the increasing stream of available remote sensing data. Spatiotemporal data cubes are becoming ever more abundant for this and are widely used in the Earth Observation community to handle geospatial raster data. Sophisticated frameworks in high-level programming languages like R and python allow scientists to draft and run their data analysis pipelines and to scale them in HPC or cloud environments.\nWhile many data cube frameworks can handle harmonized analysis-ready data cubes very well, we repeatedly experienced problems when running complex analyses on multi-source data that was not homogenized. The problems arise when different datasets need to be resampled on the fly to a common resolution and have nonaligning chunk boundaries, which leads to very complex and often unresolvable task graphs in frameworks like xarray+dask.\nIn this workshop we present the emerging ecosystem of large-scale geodata processing and visualisation in the Julia programming language. Julia is an interactive scientific programming language, designed for HPC applications with primitives for Multi-threaded and Distributed computations built into the language.\nWe will demonstrate an example analysis where data from different sources (Sentinel-1, Sentinel-2, …), summing to multiple TBs of data, can interoperate on-the-fly and scale well when run on different computing environments. We will also show how to combine these raster data with vector data to derive vector data cubes."
   },
   {
     "objectID": "intro-pkg.html",
@@ -125,8 +146,8 @@
     "objectID": "intro-pkg.html#activating-your-environment",
     "href": "intro-pkg.html#activating-your-environment",
     "title": "Introduction to the Package Manager",
-    "section": "Activating your environment",
-    "text": "Activating your environment\n\nActivate your\n\nactivate .\n# You can use any path that is on your computer\n\nSee what is installed\n\nst\n\nDownload all installed packages\n\ninstantiate",
+    "section": "1.1 Activating your environment",
+    "text": "1.1 Activating your environment\n\nActivate your\n\nactivate .\n# You can use any path that is on your computer\n\nSee what is installed\n\nst\n\nDownload all installed packages\n\ninstantiate",
     "crumbs": [
       "Home",
       "Julia Introduction",
@@ -137,8 +158,8 @@
     "objectID": "intro-pkg.html#package-handling",
     "href": "intro-pkg.html#package-handling",
     "title": "Introduction to the Package Manager",
-    "section": "Package handling",
-    "text": "Package handling\n\nAdd a package\n\nadd Example\n\nRemove a package\n\nrm Example\n\nUpdate packages\n\nup\nup PackageName\n\nFurther reading\n\nPkg.jl documentation\nPkg.jl and Julia Environments for Beginners\nModern Julia workflows on environments",
+    "section": "1.2 Package handling",
+    "text": "1.2 Package handling\n\nAdd a package\n\nadd Example\n\nRemove a package\n\nrm Example\n\nUpdate packages\n\nup\nup PackageName\n\n1.2.1 Further reading\n\nPkg.jl documentation\nPkg.jl and Julia Environments for Beginners\nModern Julia workflows on environments",
     "crumbs": [
       "Home",
       "Julia Introduction",
