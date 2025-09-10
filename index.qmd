@@ -1,7 +1,47 @@
 ---
-title: "BiDS2025_JuliaTutorial"
+title: "Julia for large scale geospatial analysis"
+subtitle: "Julia Tutorial BiDS2025"
 ---
 
-This is a Quarto website.
+This is the website of the "Julia for large scale geospatial analysis" tutorial at the [BiDS 2025 conference](https://www.bigdatafromspace2025.org/satellite-event-submission).
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+In this tutorial we will explore how to analyse raster data which is larger than RAM.
+
+## Preparation
+
+To participate in the hands-on parts of the tutorial please install Julia on your device. 
+We recommend to use the [juliaup](https://github.com/JuliaLang/juliaup) installer for julia.
+
+
+::: {.panel-tabset}
+
+## Windows 
+
+You can install juliaup via the windows store or by executing
+
+```sh
+winget install julia -s msstore
+```
+
+## Mac or Linux
+To install juliaup in Linux or Mac execute the following in a shell
+
+```sh
+curl -fsSL https://install.julialang.org | sh
+``` 
+
+:::
+
+## Schedule
+
+| Time | Topic |
+|:------|:---------|
+| 14:00 |  Introduction to Julia | 
+| 14:30 |  Julia Geo Ecosystem |
+| 15:00 |  Raster Data Loading |
+| 15:30 |  Coffee Break 
+| 15:50 |  Raster data analysis
+| 16:10 | Hands-On Challenge
+
+
+This timeline is purely approximate and given for indication purpose only. We will adjust depending on the audience. There will be additional breaks (5 minutes) regularly and time for questions during the workshop.

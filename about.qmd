@@ -4,3 +4,13 @@ title: "About"
 
 This is the material for the Julia Tutorial happening at Big Data from Space 2025 in Riga.
 This tutorial has been developed in the NFDI4Earth Measure 2.5.
+
+## Abstract
+
+We need tools to efficiently analyse the increasing stream of available remote sensing data. Spatiotemporal data cubes are becoming ever more abundant for this and are widely used in the Earth Observation community to handle geospatial raster data. Sophisticated frameworks in high-level programming languages like R and python allow scientists to draft and run their data analysis pipelines and to scale them in HPC or cloud environments. 
+
+While many data cube frameworks can handle harmonized analysis-ready data cubes very well, we repeatedly experienced problems when running complex analyses on multi-source data that was not homogenized. The problems arise when different datasets need to be resampled on the fly to a common resolution and have nonaligning chunk boundaries, which leads to very complex and often unresolvable task graphs in frameworks like xarray+dask. 
+
+In this workshop we present the emerging ecosystem of large-scale geodata processing and visualisation in the Julia programming language. Julia is an interactive scientific programming language, designed for HPC applications with primitives for Multi-threaded and Distributed computations built into the language. 
+
+We will demonstrate an example analysis where data from different sources (Sentinel-1, Sentinel-2, ...), summing to multiple TBs of data, can interoperate on-the-fly and scale well when run on different computing environments. We will also show how to combine these raster data with vector data to derive vector data cubes. 
