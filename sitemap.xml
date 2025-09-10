@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://felixcremer.github.io/BiDS2025_JuliaTutorial/index.html</loc>
+    <lastmod>2025-09-10T12:40:08.647Z</lastmod>
+  </url>
+  <url>
+    <loc>https://felixcremer.github.io/BiDS2025_JuliaTutorial/intro-julia.html</loc>
+    <lastmod>2025-09-10T12:40:08.648Z</lastmod>
+  </url>
+  <url>
+    <loc>https://felixcremer.github.io/BiDS2025_JuliaTutorial/intro-pkg.html</loc>
+    <lastmod>2025-09-10T12:40:08.648Z</lastmod>
+  </url>
+  <url>
+    <loc>https://felixcremer.github.io/BiDS2025_JuliaTutorial/intro-repl.html</loc>
+    <lastmod>2025-09-10T12:40:08.648Z</lastmod>
+  </url>
+  <url>
+    <loc>https://felixcremer.github.io/BiDS2025_JuliaTutorial/about.html</loc>
+    <lastmod>2025-09-10T12:40:08.647Z</lastmod>
+  </url>
+</urlset>
