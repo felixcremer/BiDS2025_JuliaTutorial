@@ -3,8 +3,13 @@ project:
 execute:
   freeze: auto
 website:
-  title: "Julia Tutorial BiDS 2025"
+  title: "Julia for large scale geospatial analysis"
+  favicon: logo.svg
   navbar:
+    background: dark
+    tools:
+        - icon: github
+          href: https://github.com/felixcremer/BiDS2025_JuliaTutorial
     right:
       - href: index.qmd
         text: Home
@@ -23,11 +28,31 @@ website:
       contents:
       - DimensionalData.qmd
       - DimensionalEngine.qmd
+author:
+  - name: Felix Cremer
+    affiliations: 
+    - ref: mpi
+  - name: Lazaro Alonso
+    affiliations: 
+    - ref: mpi
+  - name: Anshul Singhvi
+    affiliations: 
+    - ref: jlhub
+  - name: Fabian Gans
+    affiliations: 
+    - ref: mpi
+affiliations:
+- id: jlhub
+  name: JuliaHub
+- id: mpi
+  name: Max Planck Institute for Biogeochemistry
 format:
   html:
-    theme: cosmo
-    css: styles.css
-    toc: true
-
-
+    code-fold: false
+theme:
+  light: flatly
+  dark: darkly
+toc: true
+number-sections: true
+engines: ['julia']
 
