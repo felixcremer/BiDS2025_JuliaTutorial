@@ -1,5 +1,29 @@
 [
   {
+    "objectID": "intro-repl.html",
+    "href": "intro-repl.html",
+    "title": "Working in the REPL",
+    "section": "",
+    "text": "For a more in depth introduction and more tips and tricks see the REPL Mastery workshop from JuliaCon 2022.",
+    "crumbs": [
+      "Home",
+      "Julia Introduction",
+      "Working in the REPL"
+    ]
+  },
+  {
+    "objectID": "intro-repl.html#different-repl-modes",
+    "href": "intro-repl.html#different-repl-modes",
+    "title": "Working in the REPL",
+    "section": "",
+    "text": "For a more in depth introduction and more tips and tricks see the REPL Mastery workshop from JuliaCon 2022.",
+    "crumbs": [
+      "Home",
+      "Julia Introduction",
+      "Working in the REPL"
+    ]
+  },
+  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "BiDS2025_JuliaTutorial",
@@ -79,6 +103,13 @@
     ]
   },
   {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "This is the material for the Julia Tutorial happening at Big Data from Space 2025 in Riga. This tutorial has been developed in the NFDI4Earth Measure 2.5."
+  },
+  {
     "objectID": "intro-pkg.html",
     "href": "intro-pkg.html",
     "title": "Introduction to the Package Manager",
@@ -113,36 +144,5 @@
       "Julia Introduction",
       "Package Manager"
     ]
-  },
-  {
-    "objectID": "intro-repl.html",
-    "href": "intro-repl.html",
-    "title": "Working in the REPL",
-    "section": "",
-    "text": "For a more in depth introduction and more tips and tricks see the REPL Mastery workshop from JuliaCon 2022.",
-    "crumbs": [
-      "Home",
-      "Julia Introduction",
-      "Working in the REPL"
-    ]
-  },
-  {
-    "objectID": "intro-repl.html#different-repl-modes",
-    "href": "intro-repl.html#different-repl-modes",
-    "title": "Working in the REPL",
-    "section": "",
-    "text": "For a more in depth introduction and more tips and tricks see the REPL Mastery workshop from JuliaCon 2022.",
-    "crumbs": [
-      "Home",
-      "Julia Introduction",
-      "Working in the REPL"
-    ]
-  },
-  {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About",
-    "section": "",
-    "text": "This is the material for the Julia Tutorial happening at Big Data from Space 2025 in Riga. This tutorial has been developed in the NFDI4Earth Measure 2.5."
   }
 ]
