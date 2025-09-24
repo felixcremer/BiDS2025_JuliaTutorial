@@ -1,0 +1,589 @@
+---
+title: General introduction to YAXArrays.jl and xmap
+engine: julia
+---
+
+```{julia}
+#| scrolled: true
+#| slideshow: {slide_type: skip}
+using Pkg
+Pkg.activate(".")
+Pkg.instantiate()
+```
+
+
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+using DimensionalData, YAXArrays, Zarr, NetCDF
+using GLMakie
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+
+bucket = "esdl-esdc-v3.0.2"
+store = "esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
+path = "https://s3.bgc-jena.mpg.de:9000/" * bucket * "/" * store
+c = Cube(open_dataset(zopen(path,consolidated=true,fill_as_missing=true)))
+
+#c = Cube(joinpath(tutorialdir,"esdc_subset2.zarr"))
+```
+
+## The `mapCube` function
+
+is a generalization of mapslices, where you can annotate the exact signature of the function to be applied. For example the computation of the `median` over time can be written using `mapCube`. 
+Here one hase to specify the dimension(s) that the user-defined function is going to operate on. For the computation of the median over time the only input dimension is `time` and there are no output dimensions as only a single value is returned. The user defined function passed to `mapCube` always has the signature `f(outputs..., inputs...)` and potentially followd by additional arguments and keyword args. 
+
+## Apply function along single Axis
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+using Statistics 
+indims = InDims("time")
+outdims = OutDims()
+function apply_median(xout, xin)
+    x = filter(!ismissing, xin)
+
+    x = filter(!isnan,x)
+    #@show x
+
+    #filter!(!ismissing, x)
+    xout[] = isempty(x) ? missing : median(x)
+end
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+medians = mapCube(apply_median, c[Variable=Where(contains("temp"))];indims, outdims)
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+fig, ax, heat = heatmap(DimArray(medians[Variable=At("air_temperature_2m")]))
+```
+
+## Apply function on all elements
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+medians_kelvin = map(x-> x + 273.15, medians)
+```
+
+This function is applied lazily and only computed when the data is worked with. This could be a mapCube operation, saving the data to disk or plotting the data. 
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+heatmap(DimArray(medians_kelvin[Variable=At("air_temperature_2m"), region="Italy"]))
+```
+
+## Arguments for inner function and output dimensions
+
+Let's make a slightly more complex computation to demonstrate a case where multiple outputs are generated. For examples, imagine we want to normalize every time series (to zero mean and unit variance), but at the same time return the means and variances in a single dataset for later re-use:
+
+## Apply function with multiple output cubes
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+function norm(ts_out, mean_out, std_out, ts_in)
+    x = filter(!ismissing, ts_in)
+
+    tsshort = filter(!isnan,x)
+    if isempty(tsshort)
+        ts_out .= missing
+        mean_out[] = missing
+        std_out[] = missing
+    else
+        mean_out[] = mean(tsshort)
+        std_out[] = std(tsshort)
+        ts_out .= (ts_in .- mean_out[])./std_out[]
+    end
+end
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+using NetCDF
+indims = InDims("Time")
+od_ts = OutDims("Time",path = "./normalized_ts.zarr",
+                backend=:zarr,overwrite=true)
+od_m = OutDims(path = "./means.nc",backend=:netcdf, overwrite=true)
+od_s = OutDims(path = "./stds.nc",backend=:netcdf, overwrite=true)
+outdims = (od_ts, od_m, od_s)
+tsnorm, means, stds = mapCube(norm,c[Variable=Where(contains("temp"))],indims=indims, outdims=outdims);
+```
+
+```{julia}
+#| scrolled: true
+#| slideshow: {slide_type: subslide}
+heatmap(DimArray(stds[Variable=At("air_temperature_2m")]))
+```
+
+## Apply function on moving window
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+function meanfilter(xout, xin)
+    if ismissing(xin[2,2])
+        xout .= missing
+    else
+    xout .= mean(skipmissing(xin))
+    end
+end
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+indims = InDims(MovingWindow("lon", 1,1),MovingWindow("lat", 1, 1))
+```
+
+```{julia}
+heatmap(DimArray(means[Variable=At("air_temperature_2m")]))
+```
+
+```{julia}
+stds
+```
+
+```{julia}
+filteredmeans = mapCube(meanfilter, means, indims=indims, outdims=OutDims())
+```
+
+```{julia}
+heatmap(DimArray(filteredmeans[Variable=At("air_temperature_2m")]))
+```
+
+## Define new output dimensions
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+using Dates
+dateformatfun(x) = Dates.format.(rata2datetime.(x), "mm/dd/yyyy")
+gpp = c[Variable=At("gross_primary_productivity"),
+        time=Date(2001)..Date(2018,12,31), 
+        lon=Near(11.3464),lat=Near(46.4946)]
+fig,ax, pl = lines(datetime2rata.(lookup(gpp, Ti).data),gpp.data)
+ax.xtickformat = dateformatfun
+fig
+```
+
+So far the function applied here were very simple statistics. Just to stress again, that we are running arbitrary Julia code here, so for example if we want to use some package for time series decomposition like `Forecast.jl`:
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+using Forecast
+stlres = stl(gpp.data[:],46,robust=true,verbose=false,
+            timestamp=lookup(gpp, Ti).data)
+```
+
+```{julia}
+#| slideshow: {slide_type: skip}
+function plot_stlres(t, org, stlres)
+    fig = Figure()
+    axorg = Axis(fig[1,1], title="Original data")
+    axseas = Axis(fig[2,1], title="Seasonal")
+    axtrend = Axis(fig[3,1], title="Trend")
+    axrem = Axis(fig[4,1], title="Remainder")
+    lines!(axorg,t, org)
+    lines!(axseas, t, stlres.decomposition[!,:Seasonal])
+    lines!(axtrend, t, stlres.decomposition[!, :Trend])
+    lines!(axrem, t, stlres.decomposition[!, :Remainder])
+    hidexdecorations!.([axorg, axseas, axtrend], grid=false)
+    axrem.xtickformat = dateformatfun
+    fig
+end
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+t = datetime2rata.(stlres.decomposition[!,:Timestamp])
+plot_stlres(t, gpp, stlres)
+```
+
+In order to apply this over a full array we define the usual Trio: indims, outdims and the function to be applied. Here we create a new dimension for the output. There are 2 types of axes in YAXArrays, `CategoricalAxis` for unordered and `RangeAxis` for ordered dimensions. Here we create a categorical axis for our outputs. This means that inside the function the input array `xin` is a vector with of length `n_timesteps` and the output is a matrix of size `n_timesteps x 3` 
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+import Logging
+Logging.disable_logging(Logging.Info)
+indims = InDims("time")
+outdims = OutDims("time",Dim{:Scale}(["Seasonal", "Trend", "Remainder"]), 
+                    path = "decomposed.zarr",backend=:zarr, overwrite=true)
+function decompose_TS(xout, xin)
+    any(isnan,xin) && return xout .= missing
+    stlres = stl(xin,46,robust=false,verbose=false)
+    _,seas,trend,rem = eachcol(stlres.decomposition)
+    xout[:,1] = seas
+    xout[:,2] = trend
+    xout[:,3] = rem
+end
+```
+
+```{julia}
+#| slideshow: {slide_type: skip}
+using Logging
+Logging.disable_logging(Warn)
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+@time dec = mapCube(decompose_TS, 
+    c[Variable=At("gross_primary_productivity"),
+        time=Date(2001)..Date(2018,12,31),
+        region="Italy"],
+        #lon=Near(11.3464),lat=Near(46.4946)],
+    indims = indims,
+    outdims = outdims
+)
+```
+
+```{julia}
+#| slideshow: {slide_type: skip}
+Logging.disable_logging(Debug)
+```
+
+```{julia}
+#| slideshow: {slide_type: skip}
+fig, axseas, heatyax = lines( datetime2rata.(lookup(dec, Ti).data),
+    dec[lon=Near(11.3464),lat=Near(46.4946)].data[:,1])
+fig
+```
+
+```{julia}
+#| slideshow: {slide_type: skip}
+lines!(datetime2rata.(lookup(dec, Ti).data),
+    stlres.decomposition[!, :Seasonal])
+fig
+```
+
+You see that the resulting array is a 4-dimensional array including the newly created axis. Lets do some plots:
+
+```{julia}
+#| slideshow: {slide_type: skip}
+#Compute variance and plot a map of seasonal variance
+scalevar = mapslices(var,dec,dims="Time")
+scalerange = mapslices(x->maximum(x) - minimum(x), dec, dims="Time")
+```
+
+```{julia}
+#| slideshow: {slide_type: skip}
+heatmap(DimArray(scalerange[scale=At("Seasonal")]))
+```
+
+```{julia}
+#| slideshow: {slide_type: skip}
+heatmap(DimArray(scalevar[scale=At("Remainder")]))
+```
+
+## Interpolate data on finer grids
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+using Revise,EarthDataLab, DimensionalData,Rasters, Interpolations
+#c = esdd()
+ds = open_dataset(joinpath(tutorialdir,"esdc_subset2.zarr"))
+tair = ds.air_temperature_2m
+
+newlons = -179.95:0.1:179.95
+newlats = -89.95:0.1:89.95
+
+#Option 1:
+tair1 = spatialinterp(tair,newlons,newlats, order =Quadratic())
+
+tair1[lon=10..15, lat=50..60]
+
+tair1italy = tair1[region="Italy",time=Near(DateTime(2015,6,1))]
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+heatmap(DimArray(tair[region="Italy", time=Near(DateTime(2015,6,1))]))
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+figinterp, interpax, interpheat = heatmap(DimArray(tair1italy))
+```
+
+```{julia}
+#| scrolled: false
+#| slideshow: {slide_type: subslide}
+using Dates
+newtimes = DateTime(1979):Day(1):DateTime(2021,12,31)
+tair2 = interpolatecube(tair,Dict(:time=>newtimes), order=Dict(:time=>Quadratic()))
+tair2Jan = tair2[time=DateTime(2001)..DateTime(2002,1,31), lon=Near(11.3464),lat=Near(46.4946)]
+tairJan = tair[time=DateTime(2001)..DateTime(2002,1,31), lon=Near(11.3464),lat=Near(46.4946)]
+
+fig, ax, pl = scatter(datetime2rata.(lookup(tair2Jan, Ti).data), tair2Jan.data[:],label="Interpolated")
+scatter!(datetime2rata.(lookup(tairJan, Ti).data), tairJan.data[:], label="Original")
+ax.xtickformat = dateformatfun
+axislegend(ax)
+fig
+```
+
+## Use Python or R in inner function
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+using PyCall
+scipyndimage = pyimport("scipy.ndimage")
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+function gaussian_smooth(xout, xin)
+    missinds = ismissing.(xin)
+    smooth = scipyndimage.gaussian_filter(xin[.!missinds], sigma=4)
+    xout[.!missinds] .= smooth
+end
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+gpp_bozen_2010 = c[lon=Near(11.3464),lat=Near(46.4946),
+    time = DateTime(2010)..DateTime(2011),
+    Variable=At("gross_primary_productivity")]
+```
+
+```{julia}
+#| slideshow: {slide_type: fragment}
+smoothcube = mapCube(gaussian_smooth, gpp_bozen_2010, indims=InDims("time"), outdims=OutDims("time"))
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+fig, ax, l = lines(datetime2rata.(lookup(gpp_bozen_2010, Ti).data), gpp_bozen_2010[:], label="Original")
+lines!(ax,datetime2rata.(lookup(smoothcube, Ti).data), smoothcube[:], label="Smooth")
+ax.xtickformat= dateformatfun
+axislegend(ax)
+fig
+```
+
+## Parellelize the data processing
+
+## Easy parallelization on multiple cores and multiple nodes¶
+* Use threads on a single computer 
+* Use Distributed on multiple computers
+* Works also with ClusterManagers like SLURM
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+using Distributed, Zarr
+addprocs(4);
+```
+
+```{julia}
+#| scrolled: true
+#| slideshow: {slide_type: fragment}
+@everywhere begin 
+    using Pkg
+    Pkg.activate(".")
+    Pkg.instantiate()
+    #Pkg.status()
+    using YAXArrays, Statistics, NetCDF, Zarr
+end
+```
+
+
+# Creating a SAR data cube from GDAL VRTs
+
+
+- Combine multiple Tif files into one data cube for time series analysis 
+- Use Sentinel-1 data as an example
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+# Load needed packages
+using Dates
+using ArchGDAL: ArchGDAL as AG
+using YAXArrays
+using DimensionalData
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+# Find relevant data
+folder = "/home/fcremer/Daten/Tutorials/s1data"
+pol = "VH"
+allfiles = Iterators.flatten([joinpath.((t[1],), t[3]) for t in walkdir(folder)])
+nonhiddenfiles = Iterators.filter(x->!startswith(basename(x),"."), allfiles)
+filteredfiles = collect(Iterators.filter(x->occursin(pol,x), nonhiddenfiles))
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+# parse the time steps of the data
+using Dates
+function getdate(x,reg = r"[0-9]{8}T[0-9]{6}", df = dateformat"yyyymmddTHHMMSS")
+   m = match(reg,x).match
+   date =DateTime(m,df)
+end
+dates = getdate.(filteredfiles)
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+p = sortperm(dates)
+sdates = dates[p]
+sfiles = filteredfiles[p]
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+"""
+grouptimes(times, timediff=200000)
+Group a sorted vector of time stamps into subgroups
+where the difference between neighbouring elements are less than `timediff` milliseconds.
+This returns the indices of the subgroups as a vector of vectors.
+"""
+function grouptimes(times, timediff=200000)
+   @assert sort(times) == times
+   group = [1]
+   groups = [group]
+
+   for i in 2:length(times)
+      t = times[i]
+      period = t - times[group[end]]
+      if period.value < timediff
+         push!(group, i)
+      else
+         push!(groups, [i])
+         group = groups[end]
+      end
+   end
+   return groups
+end
+
+groupinds = grouptimes(sdates, 200000)
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+datasets = AG.read.(sfiles)
+datasetgroups = [datasets[group] for group in groupinds]
+#We have to save the vrts because the usage of nested vrts is not working as a rasterdataset
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+temp = tempdir()
+outpaths = [joinpath(temp, splitext(basename(sfiles[group][1]))[1] * ".vrt") for group in groupinds]
+vrt_grouped = AG.unsafe_gdalbuildvrt.(datasetgroups)
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+AG.write.(vrt_grouped, outpaths)
+vrt_grouped = AG.read.(outpaths)
+vrt_vv = AG.unsafe_gdalbuildvrt(vrt_grouped, ["-separate"])
+rvrt_vv = AG.RasterDataset(vrt_vv)
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+cube=YAXArray(rvrt_vv)
+#bandnames = AG.GDAL.gdalgetfilelist(vrt_vv.ptr)
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+# Set the timesteps from the bandnames as time axis
+dates_grouped = [sdates[group[begin]] for group in groupinds]
+
+taxis = Ti(dates_grouped)
+cube = DimensionalData.set(cube, Dim{:Band}=>taxis)
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+YAXArrays.Cubes.cubechunks(cube)
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+newchunked = setchunks(cube, (X=400,Y=400, Band=2))
+```
+
+```{julia}
+#| slideshow: {slide_type: fragment}
+YAXArrays.Cubes.cubechunks(newchunked)
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+savecube(newchunked, "s1data.nc")
+```
+
+
+# 3. YAXArrays table-interface
+
+Similar to Rasters.jl, also YAXArrays provides a method to represent labelled arrays as a table. However, as everything in YAXArrays, lazy is the default as well for tables. So the CubeTable constructor will not load any data but will provide an iterator over table chunks that one can use for further analysis. Here it is guaranteed that these subtables fit into memory and they can be distributed for parallel data loading and processing
+
+```{julia}
+using Revise, YAXArrays, Zarr, Plots
+ds = open_dataset("./esdc_subset2.zarr")
+
+countryds = open_dataset("./countries.zarr")
+countryds.countries.properties["labels"] = Dict(parse(Int,k)=>v for (k,v) in countryds.countries.properties["labels"])
+countryds.countries.properties["Name"] = "Country"
+countryds.countries
+```
+
+```{julia}
+
+tab = CubeTable(gpp = ds.gross_primary_productivity, tair = ds.air_temperature_2m, country = countryds.countries)
+```
+
+It is possible to loop over or index into a table iterator to get one of the subtables or . Note that even here nothing is loaded yet. 
+
+```{julia}
+subtab = tab[42]
+```
+
+Only when accessing a specific column, the data is actually loaded
+
+```{julia}
+subtab.tair
+```
+
+But since a subtable implements the Tables interface we can also convert to a DataFrame
+
+```{julia}
+using DataFrames
+DataFrame(subtab)
+```
+
+These tables can be used for aggregating data. Suppose we want to compute the mean temperature by country, YAXArrays provides some tools to do this in connection with OnlineStats.jl and WeightedOnlineStats.jl
+
+```{julia}
+using WeightedOnlineStats, OnlineStats
+#using Distributed
+#addprocs(8)
+```
+
+```{julia}
+#@everywhere begin
+    using Pkg
+    Pkg.activate(".")
+    using YAXArrays, Zarr, Plots, WeightedOnlineStats, OnlineStats, Dates
+#end
+```
+
+```{julia}
+@time r = cubefittable(tab, WeightedMean, :tair, by=(:country,),weight=(r->cosd(r.lat)))
+```
+
+```{julia}
+DataFrame(first(CubeTable(mtemp = r)))
+```
+
+```{julia}
+@everywhere splitmonth(r) = month(r.time)
+r = cubefittable(tab, WeightedMean, :tair, by=(:country,splitmonth),weight=(r->cosd(r.lat)))
+```
+
+```{julia}
+rmprocs(workers())
+```
+
+
