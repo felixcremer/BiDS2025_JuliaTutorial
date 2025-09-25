@@ -102,28 +102,48 @@
     "href": "index.html",
     "title": "Julia for large scale geospatial analysis",
     "section": "",
-    "text": "This is the website of the “Julia for large scale geospatial analysis” tutorial at the BiDS 2025 conference.\nIn this tutorial we will explore how to analyse raster data which is larger than RAM."
+    "text": "This is the website of the “Julia for large scale geospatial analysis” tutorial at the BiDS 2025 conference.\nIn this tutorial we will explore how to analyse raster data which is larger than RAM.",
+    "crumbs": [
+      "Home"
+    ]
   },
   {
     "objectID": "index.html#preparation",
     "href": "index.html#preparation",
     "title": "Julia for large scale geospatial analysis",
     "section": "1 Preparation",
-    "text": "1 Preparation\nTo participate in the hands-on parts of the tutorial please install Julia on your device. We recommend to use the juliaup installer for julia.\n\nWindowsMac or Linux\n\n\nYou can install juliaup via the windows store or by executing\nwinget install julia -s msstore\n\n\nTo install juliaup in Linux or Mac execute the following in a shell\ncurl -fsSL https://install.julialang.org | sh"
+    "text": "1 Preparation\nTo participate in the hands-on parts of the tutorial please install Julia on your device. We recommend to use the juliaup installer for julia.\n\nWindowsMac or Linux\n\n\nYou can install juliaup via the windows store or by executing\nwinget install julia -s msstore\n\n\nTo install juliaup in Linux or Mac execute the following in a shell\ncurl -fsSL https://install.julialang.org | sh",
+    "crumbs": [
+      "Home"
+    ]
   },
   {
     "objectID": "index.html#schedule",
     "href": "index.html#schedule",
     "title": "Julia for large scale geospatial analysis",
     "section": "2 Schedule",
-    "text": "2 Schedule\n\n\n\nTime\nTopic\n\n\n\n\n14:00\nIntroduction to Julia\n\n\n14:30\nJulia Geo Ecosystem\n\n\n15:00\nRaster Data Loading\n\n\n15:30\nCoffee Break\n\n\n15:50\nRaster data analysis\n\n\n16:10\nHands-On Challenge\n\n\n\nThis timeline is purely approximate and given for indication purpose only. We will adjust depending on the audience. There will be additional breaks (5 minutes) regularly and time for questions during the workshop."
+    "text": "2 Schedule\n\n\n\nTime\nTopic\n\n\n\n\n14:00\nIntroduction to Julia\n\n\n14:30\nJulia Geo Ecosystem\n\n\n15:00\nRaster Data Loading\n\n\n15:30\nCoffee Break\n\n\n15:50\nRaster data analysis\n\n\n16:10\nHands-On Challenge\n\n\n\nThis timeline is purely approximate and given for indication purpose only. We will adjust depending on the audience. There will be additional breaks (5 minutes) regularly and time for questions during the workshop.",
+    "crumbs": [
+      "Home"
+    ]
+  },
+  {
+    "objectID": "geo-ecosystem.html",
+    "href": "geo-ecosystem.html",
+    "title": "Julia Geo Ecosystem",
+    "section": "",
+    "text": "1 Packages\nA typical workflow might involve the following packages:\n\nDimensionalData.jl\nRasters.jl\nZarr.jl\nYAXArrays.jl\nGeoStats.jl\nGeoInterface.jl\nGeoMakie.jl\nTyler.jl",
+    "crumbs": [
+      "Home",
+      "Geo Ecosystem"
+    ]
   },
   {
     "objectID": "intro-pkg.html",
     "href": "intro-pkg.html",
     "title": "Introduction to the Package Manager",
     "section": "",
-    "text": "This is only a small glimpse in the Julia package manager. For an in depth intro see Pkg.jl and Julia Environments for Beginners.",
+    "text": "This is only a small glimpse into the Julia package manager. For an in depth intro see Pkg.jl and Julia Environments for Beginners.",
     "crumbs": [
       "Home",
       "Julia Introduction",
@@ -135,7 +155,7 @@
     "href": "intro-pkg.html#activating-your-environment",
     "title": "Introduction to the Package Manager",
     "section": "1.1 Activating your environment",
-    "text": "1.1 Activating your environment\n\nActivate your\n\nactivate .\n# You can use any path that is on your computer\n\nSee what is installed\n\nst\n\nDownload all installed packages\n\ninstantiate",
+    "text": "1.1 Activating your environment\n\nActivate your\n\nactivate .\n# You can use any path that is on your computer\n\nSee what is installed\n\nst # status\n\nDownload all installed packages\n\ninstantiate",
     "crumbs": [
       "Home",
       "Julia Introduction",

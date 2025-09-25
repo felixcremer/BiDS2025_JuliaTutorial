@@ -2,18 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://felixcremer.github.io/BiDS2025_JuliaTutorial/intro-julia.html</loc>
-    <lastmod>2025-09-25T14:16:12.920Z</lastmod>
+    <lastmod>2025-09-25T14:43:52.638Z</lastmod>
   </url>
   <url>
     <loc>https://felixcremer.github.io/BiDS2025_JuliaTutorial/about.html</loc>
-    <lastmod>2025-09-25T14:16:12.920Z</lastmod>
+    <lastmod>2025-09-25T14:43:52.638Z</lastmod>
   </url>
   <url>
     <loc>https://felixcremer.github.io/BiDS2025_JuliaTutorial/index.html</loc>
-    <lastmod>2025-09-25T14:16:12.920Z</lastmod>
+    <lastmod>2025-09-25T14:43:52.638Z</lastmod>
+  </url>
+  <url>
+    <loc>https://felixcremer.github.io/BiDS2025_JuliaTutorial/geo-ecosystem.html</loc>
+    <lastmod>2025-09-25T14:43:52.638Z</lastmod>
   </url>
   <url>
     <loc>https://felixcremer.github.io/BiDS2025_JuliaTutorial/intro-pkg.html</loc>
-    <lastmod>2025-09-25T14:16:12.921Z</lastmod>
+    <lastmod>2025-09-25T14:43:52.638Z</lastmod>
   </url>
 </urlset>
