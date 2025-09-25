@@ -21,7 +21,6 @@ website:
     - section: "Julia Introduction"
       contents:
       - intro-julia.qmd
-      - intro-repl.qmd
       - href: intro-pkg.qmd
         text: Package Manager
     - section: "Raster data analysis"
