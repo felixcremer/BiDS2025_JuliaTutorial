@@ -5,6 +5,18 @@ title: Introduction to the Package Manager
 This is only a small glimpse into the Julia package manager. 
 For an in depth intro see [Pkg.jl and Julia Environments for Beginners](https://jkrumbiegel.com/pages/2022-08-26-pkg-introduction/).
 
+## Essentials
+
+- `add PackageName` - Install a package
+- `rm PackageName` - Remove a package
+- `up` or `update` - Update all packages
+- `resolve` - Determine versions of all packages specified in Project.toml and Manifest.toml`
+- `instantiate` - Install all packages from Project.toml
+- `st` or `status` - Show installed packages
+- `activate .` - Activate environment in current directory
+- `?` - Get help
+
+
 # REPL package manager mode
 
 There are two ways to interact with the package manager.
