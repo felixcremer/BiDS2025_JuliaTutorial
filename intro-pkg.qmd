@@ -63,3 +63,5 @@ up PackageName
 - [Pkg.jl documentation]()
 - [Pkg.jl and Julia Environments for Beginners](https://jkrumbiegel.com/pages/2022-08-26-pkg-introduction/)
 - [Modern Julia workflows on environments](https://modernjuliaworkflows.org/writing/#environments)
+
+For a more in depth introduction and more tips and tricks see the [REPL Mastery workshop](https://github.com/miguelraz/REPLMasteryWorkshop) from JuliaCon 2022.

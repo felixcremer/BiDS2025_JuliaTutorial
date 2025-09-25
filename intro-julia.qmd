@@ -4,7 +4,24 @@ title: "Introduction to Julia"
 
 # Why Julia?
 
+- Published around 2012 initially developed at MIT
+- Just in Time compiled
+- Optionally typed
+- Gives you the best of C, Matlab and Python
+- Function oriented not object oriented
+- solves the two language problem
+
 # Basics of Julia programming
+
+- Variables
+- struct
+- Boolean Operators and Numeric comparisons
+- Functions
+- Multiple Dispatch
+- Keyword arguments
+- Anonymous Functions
+- Conditionals
+
 
 ```{julia}
 # Simple math
@@ -94,8 +111,8 @@ end
 
 ```{julia}
 struct PointF
-x::Float64
-y::Float64
+    x::Float64
+    y::Float64
 end
 p = PointF(2.0,3.0)
 ```
@@ -104,8 +121,8 @@ The fields of a struct may or may not be typed
 
 ```{julia}
 struct PointUntyped
-x
-y
+    x
+    y
 end
 p = PointUntyped(2.f0, 3)
 ```
@@ -119,8 +136,8 @@ of field types.
 
 ```{julia}
 struct Point{T<:Number}
-x::T
-y::T
+    x::T
+    y::T
 end
 p = Point(3.f0,2.f0)
 ```
@@ -177,6 +194,10 @@ f1(1,2) == f2(1,2) == f3(1,2) == 3
 ## Multiple Dispatch
 
 In object-oriented programming languages methods (behavior) are part of the class namespace itself and can be used to implement generic behavior.
+```{julia}
+using PythonCall
+```
+
 
 ```{python}
 class Point():
