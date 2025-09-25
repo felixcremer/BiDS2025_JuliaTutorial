@@ -18,11 +18,15 @@ website:
     style: "docked"
     search: true
     contents:
+    - href: "index.qmd"
+      text: Home
     - section: "Julia Introduction"
       contents:
       - intro-julia.qmd
       - href: intro-pkg.qmd
         text: Package Manager
+    - href: "geo-ecosystem.qmd"
+      text: Geo Ecosystem
     - section: "Raster data analysis"
       contents:
       - DimensionalData.qmd

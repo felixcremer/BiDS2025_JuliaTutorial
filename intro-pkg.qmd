@@ -2,7 +2,7 @@
 title: Introduction to the Package Manager
 ---
 
-This is only a small glimpse in the Julia package manager. 
+This is only a small glimpse into the Julia package manager. 
 For an in depth intro see [Pkg.jl and Julia Environments for Beginners](https://jkrumbiegel.com/pages/2022-08-26-pkg-introduction/).
 
 # REPL package manager mode
@@ -23,7 +23,7 @@ From now on we will assume you are in the pkg REPL mode
 
 - get some help
 ```julia
-help
+? # help
 ```
 
 ## Activating your environment
@@ -36,7 +36,7 @@ activate .
 
 - See what is installed
 ```julia
-st
+st # status
 ```
 - Download all installed packages
 ```julia
