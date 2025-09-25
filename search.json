@@ -128,6 +128,16 @@
     ]
   },
   {
+    "objectID": "index.html#development-tools",
+    "href": "index.html#development-tools",
+    "title": "Julia for large scale geospatial analysis",
+    "section": "3 Development Tools",
+    "text": "3 Development Tools\nWe recommend VS Code with the Julia extension installed.\n\nInstall VS code from Visual Studio Code\nInstall the Julia extension: Search for “Julia” in extensions\n\nOther options that we won’t use :\n\nPlot Notebooks (Interactive/reactive documents)\nJupyter notebooks",
+    "crumbs": [
+      "Home"
+    ]
+  },
+  {
     "objectID": "geo-ecosystem.html",
     "href": "geo-ecosystem.html",
     "title": "Julia Geo Ecosystem",
@@ -144,6 +154,18 @@
     "title": "Introduction to the Package Manager",
     "section": "",
     "text": "This is only a small glimpse into the Julia package manager. For an in depth intro see Pkg.jl and Julia Environments for Beginners.",
+    "crumbs": [
+      "Home",
+      "Julia Introduction",
+      "Package Manager"
+    ]
+  },
+  {
+    "objectID": "intro-pkg.html#essentials",
+    "href": "intro-pkg.html#essentials",
+    "title": "Introduction to the Package Manager",
+    "section": "0.1 Essentials",
+    "text": "0.1 Essentials\n\nadd PackageName - Install a package\nrm PackageName - Remove a package\nup or update - Update all packages\nresolve - Determine versions of all packages specified in Project.toml and Manifest.toml`\ninstantiate - Install all packages from Project.toml\nst or status - Show installed packages\nactivate . - Activate environment in current directory\n? - Get help",
     "crumbs": [
       "Home",
       "Julia Introduction",

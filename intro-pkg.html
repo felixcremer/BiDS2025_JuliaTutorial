@@ -404,7 +404,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#repl-package-manager-mode" id="toc-repl-package-manager-mode" class="nav-link active" data-scroll-target="#repl-package-manager-mode"><span class="header-section-number">1</span> REPL package manager mode</a>
+  <li><a href="#essentials" id="toc-essentials" class="nav-link active" data-scroll-target="#essentials"><span class="header-section-number">0.1</span> Essentials</a></li>
+  <li><a href="#repl-package-manager-mode" id="toc-repl-package-manager-mode" class="nav-link" data-scroll-target="#repl-package-manager-mode"><span class="header-section-number">1</span> REPL package manager mode</a>
   <ul class="collapse">
   <li><a href="#activating-your-environment" id="toc-activating-your-environment" class="nav-link" data-scroll-target="#activating-your-environment"><span class="header-section-number">1.1</span> Activating your environment</a></li>
   <li><a href="#package-handling" id="toc-package-handling" class="nav-link" data-scroll-target="#package-handling"><span class="header-section-number">1.2</span> Package handling</a>
@@ -476,6 +477,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <p>This is only a small glimpse into the Julia package manager. For an in depth intro see <a href="https://jkrumbiegel.com/pages/2022-08-26-pkg-introduction/">Pkg.jl and Julia Environments for Beginners</a>.</p>
+<section id="essentials" class="level2" data-number="0.1">
+<h2 data-number="0.1" class="anchored" data-anchor-id="essentials"><span class="header-section-number">0.1</span> Essentials</h2>
+<ul>
+<li><code>add PackageName</code> - Install a package</li>
+<li><code>rm PackageName</code> - Remove a package</li>
+<li><code>up</code> or <code>update</code> - Update all packages</li>
+<li><code>resolve</code> - Determine versions of all packages specified in Project.toml and Manifest.toml`</li>
+<li><code>instantiate</code> - Install all packages from Project.toml</li>
+<li><code>st</code> or <code>status</code> - Show installed packages</li>
+<li><code>activate .</code> - Activate environment in current directory</li>
+<li><code>?</code> - Get help</li>
+</ul>
+</section>
 <section id="repl-package-manager-mode" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> REPL package manager mode</h1>
 <p>There are two ways to interact with the package manager. Either programmatically by loading it in via <code>using Pkg</code> or by switching to the pkg mode in the REPL. Here we will use the REPL mode. To switch to the pkg mode use the closing square bracket.</p>
