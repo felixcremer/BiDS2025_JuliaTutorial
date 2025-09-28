@@ -7,11 +7,17 @@ engine: julia
 #| scrolled: true
 #| slideshow: {slide_type: skip}
 using Pkg
+Pkg.offline()
 Pkg.activate(".")
 Pkg.instantiate()
 ```
 
+```{julia}
+import Makie: create_dim_conversion
 
+create_dim_conversion(union_typ::Type{Union{Missing,T}}) where {T<:Real} =
+    create_dim_conversion(union_typ.b)
+```
 
 ```{julia}
 #| slideshow: {slide_type: subslide}
@@ -25,7 +31,9 @@ using GLMakie
 bucket = "esdl-esdc-v3.0.2"
 store = "esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
 path = "https://s3.bgc-jena.mpg.de:9000/" * bucket * "/" * store
-c = Cube(open_dataset(zopen(path,consolidated=true,fill_as_missing=true)))
+path = joinpath(homedir(), "Daten/") * "bids2025_" * store
+ds = open_dataset(zopen(path,consolidated=true,fill_as_missing=false))
+c = Cube(ds)
 
 #c = Cube(joinpath(tutorialdir,"esdc_subset2.zarr"))
 ```
@@ -40,41 +48,39 @@ Here one hase to specify the dimension(s) that the user-defined function is goin
 ```{julia}
 #| slideshow: {slide_type: subslide}
 using Statistics 
-indims = InDims("time")
-outdims = OutDims()
 function apply_median(xout, xin)
     x = filter(!ismissing, xin)
-
     x = filter(!isnan,x)
-    #@show x
-
-    #filter!(!ismissing, x)
     xout[] = isempty(x) ? missing : median(x)
 end
 ```
 
 ```{julia}
 #| slideshow: {slide_type: subslide}
-medians = mapCube(apply_median, c[Variable=Where(contains("temp"))];indims, outdims)
+medians = xmap(apply_median, c[Variable=Where(contains("temp"))] ⊘ :time)
 ```
 
 ```{julia}
 #| slideshow: {slide_type: subslide}
-fig, ax, heat = heatmap(DimArray(medians[Variable=At("air_temperature_2m")]))
+fig, ax, heat = heatmap(medians[Variable=At("air_temperature_2m"), time=1]);
+colorbar = Colorbar(fig[1,2], heat)
+fig
 ```
 
 ## Apply function on all elements
 
 ```{julia}
 #| slideshow: {slide_type: subslide}
-medians_kelvin = map(x-> x + 273.15, medians)
+medians_kelvin = medians .+ 273.15
 ```
 
-This function is applied lazily and only computed when the data is worked with. This could be a mapCube operation, saving the data to disk or plotting the data. 
+This function is applied lazily and only computed when the data is worked with. This could be requesting the data via `readcubedata`, saving the data to disk or plotting the data. 
 
 ```{julia}
 #| slideshow: {slide_type: subslide}
-heatmap(DimArray(medians_kelvin[Variable=At("air_temperature_2m"), region="Italy"]))
+fig, ax, heat = heatmap(medians_kelvin[Variable=At("air_temperature_2m"), time=1]);
+colorbar = Colorbar(fig[1,2], heat)
+fig
 ```
 
 ## Arguments for inner function and output dimensions
@@ -100,6 +106,9 @@ function norm(ts_out, mean_out, std_out, ts_in)
     end
 end
 ```
+```{julia}
+ts_norm, mean_ts, std_ts = xmap(norm, c ⊘ :time, output = (XOutput(c.time), XOutput(), XOutput()) )
+```
 
 ```{julia}
 #| slideshow: {slide_type: subslide}
@@ -116,7 +125,9 @@ tsnorm, means, stds = mapCube(norm,c[Variable=Where(contains("temp"))],indims=in
 ```{julia}
 #| scrolled: true
 #| slideshow: {slide_type: subslide}
-heatmap(DimArray(stds[Variable=At("air_temperature_2m")]))
+fig, ax, heat = heatmap(std_ts[Variable=At("air_temperature_2m"), time=1]);
+colorbar = Colorbar(fig[1,2], heat)
+fig
 ```
 
 ## Apply function on moving window
@@ -135,6 +146,7 @@ end
 ```{julia}
 #| slideshow: {slide_type: subslide}
 indims = InDims(MovingWindow("lon", 1,1),MovingWindow("lat", 1, 1))
+moving_lat = MovingIntervals(:closed, :closed, left_bounds=)
 ```
 
 ```{julia}
@@ -157,66 +169,47 @@ heatmap(DimArray(filteredmeans[Variable=At("air_temperature_2m")]))
 
 ```{julia}
 #| slideshow: {slide_type: subslide}
-using Dates
-dateformatfun(x) = Dates.format.(rata2datetime.(x), "mm/dd/yyyy")
 gpp = c[Variable=At("gross_primary_productivity"),
         time=Date(2001)..Date(2018,12,31), 
         lon=Near(11.3464),lat=Near(46.4946)]
-fig,ax, pl = lines(datetime2rata.(lookup(gpp, Ti).data),gpp.data)
-ax.xtickformat = dateformatfun
+fig,ax, pl = lines(gpp, label= "Gross Primary Productivity")
 fig
 ```
 
-So far the function applied here were very simple statistics. Just to stress again, that we are running arbitrary Julia code here, so for example if we want to use some package for time series decomposition like `Forecast.jl`:
+So far the function applied here were very simple statistics. Just to stress again, that we are running arbitrary Julia code here, so for example if we want to use some package for time series decomposition like `SignalDecomposition.jl`:
 
 ```{julia}
 #| slideshow: {slide_type: subslide}
-using Forecast
-stlres = stl(gpp.data[:],46,robust=true,verbose=false,
-            timestamp=lookup(gpp, Ti).data)
+using SignalDecomposition
+gpp_smooth , gpp_anomalies = readcubedata.(SignalDecomposition.decompose(lookup(gpp, :time), gpp, TimeAnomaly()))
 ```
 
 ```{julia}
 #| slideshow: {slide_type: skip}
-function plot_stlres(t, org, stlres)
+#function plot_stlres(t, org, stlres)
     fig = Figure()
-    axorg = Axis(fig[1,1], title="Original data")
-    axseas = Axis(fig[2,1], title="Seasonal")
-    axtrend = Axis(fig[3,1], title="Trend")
-    axrem = Axis(fig[4,1], title="Remainder")
-    lines!(axorg,t, org)
-    lines!(axseas, t, stlres.decomposition[!,:Seasonal])
-    lines!(axtrend, t, stlres.decomposition[!, :Trend])
-    lines!(axrem, t, stlres.decomposition[!, :Remainder])
-    hidexdecorations!.([axorg, axseas, axtrend], grid=false)
-    axrem.xtickformat = dateformatfun
+    axorg = Axis(fig[1,1],title="Original")
+    lines!(axorg, gpp, label="Original GPP")
+    axsmooth = Axis(fig[2,1], title="Smoothed Data")
+    lines!(axsmooth, gpp_smooth, label="GPP Smoothed")
+    axanom = Axis(fig[3,1], title="Anomalies")
+    lines!(axanom, gpp_anomalies, label="GPP Anomalies")
+    #lines!(ax, gpp_smooth, label="GPP Smoothed")
     fig
-end
 ```
+
+
+In order to apply this over a full array we define the usual Trio: indims, outdims and the function to be applied. Here we create a new dimension for the output. This means that inside the function the input array `xin` is a vector of length `n_timesteps` and the output is a matrix of size `n_timesteps x 2` 
 
 ```{julia}
 #| slideshow: {slide_type: subslide}
-t = datetime2rata.(stlres.decomposition[!,:Timestamp])
-plot_stlres(t, gpp, stlres)
-```
-
-In order to apply this over a full array we define the usual Trio: indims, outdims and the function to be applied. Here we create a new dimension for the output. There are 2 types of axes in YAXArrays, `CategoricalAxis` for unordered and `RangeAxis` for ordered dimensions. Here we create a categorical axis for our outputs. This means that inside the function the input array `xin` is a vector with of length `n_timesteps` and the output is a matrix of size `n_timesteps x 3` 
-
-```{julia}
-#| slideshow: {slide_type: subslide}
-import Logging
-Logging.disable_logging(Logging.Info)
-indims = InDims("time")
-outdims = OutDims("time",Dim{:Scale}(["Seasonal", "Trend", "Remainder"]), 
-                    path = "decomposed.zarr",backend=:zarr, overwrite=true)
 function decompose_TS(xout, xin)
     any(isnan,xin) && return xout .= missing
-    stlres = stl(xin,46,robust=false,verbose=false)
-    _,seas,trend,rem = eachcol(stlres.decomposition)
-    xout[:,1] = seas
-    xout[:,2] = trend
-    xout[:,3] = rem
+    xsmooth, xanom = SignalDecomposition.decompose(xin)
+    xout[:,1] = xsmooth
+    xout[:,2] = xanom
 end
+xmap(decompose_TS, c ⊘ :time, output = XOutput(c.time, Dim{:Scale}(["Seasonal", "Anomalies"])))
 ```
 
 ```{julia}
