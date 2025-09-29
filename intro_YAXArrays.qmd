@@ -110,17 +110,6 @@ end
 ts_norm, mean_ts, std_ts = xmap(norm, c ⊘ :time, output = (XOutput(c.time), XOutput(), XOutput()) )
 ```
 
-```{julia}
-#| slideshow: {slide_type: subslide}
-using NetCDF
-indims = InDims("Time")
-od_ts = OutDims("Time",path = "./normalized_ts.zarr",
-                backend=:zarr,overwrite=true)
-od_m = OutDims(path = "./means.nc",backend=:netcdf, overwrite=true)
-od_s = OutDims(path = "./stds.nc",backend=:netcdf, overwrite=true)
-outdims = (od_ts, od_m, od_s)
-tsnorm, means, stds = mapCube(norm,c[Variable=Where(contains("temp"))],indims=indims, outdims=outdims);
-```
 
 ```{julia}
 #| scrolled: true
@@ -143,33 +132,39 @@ function meanfilter(xout, xin)
 end
 ```
 
+
+
+```{julia}
+fig = Figure()
+axorg = Axis(fig[1,1])
+heatmap!(axorg, mean_ts[Variable=At("air_temperature_2m"), time=1])
+```
+
+
 ```{julia}
 #| slideshow: {slide_type: subslide}
-indims = InDims(MovingWindow("lon", 1,1),MovingWindow("lat", 1, 1))
-moving_lat = MovingIntervals(:closed, :closed, left_bounds=)
+
+dlat = dims(c, :lat)
+dlon = dims(c, :lon)
+# This needs a better interface for within index space
+latinterval = MovingIntervals(center=dlat.val, width=3*step(dlat), n=length(dlat), step=step(dlat))
+loninterval = MovingIntervals(center=dlon.val, width=3*step(dlon), n=length(dlon), step=step(dlon))
+meanwindows = windows(mean_ts, :lat=>latinterval, :lon=>loninterval)
 ```
 
 ```{julia}
-heatmap(DimArray(means[Variable=At("air_temperature_2m")]))
+filteredmeans = xmap(meanfilter, meanwindows)
+
+axmean = Axis(fig[2,1])
+heatmap!(axmean, filteredmeans[Variable=At("air_temperature_2m"), time=1])
 ```
 
-```{julia}
-stds
-```
-
-```{julia}
-filteredmeans = mapCube(meanfilter, means, indims=indims, outdims=OutDims())
-```
-
-```{julia}
-heatmap(DimArray(filteredmeans[Variable=At("air_temperature_2m")]))
-```
 
 ## Define new output dimensions
 
 ```{julia}
 #| slideshow: {slide_type: subslide}
-gpp = c[Variable=At("gross_primary_productivity"),
+gpp = ds.gross_primary_productivity[
         time=Date(2001)..Date(2018,12,31), 
         lon=Near(11.3464),lat=Near(46.4946)]
 fig,ax, pl = lines(gpp, label= "Gross Primary Productivity")
@@ -209,7 +204,6 @@ function decompose_TS(xout, xin)
     xout[:,1] = xsmooth
     xout[:,2] = xanom
 end
-xmap(decompose_TS, c ⊘ :time, output = XOutput(c.time, Dim{:Scale}(["Seasonal", "Anomalies"])))
 ```
 
 ```{julia}
@@ -220,14 +214,9 @@ Logging.disable_logging(Warn)
 
 ```{julia}
 #| slideshow: {slide_type: subslide}
-@time dec = mapCube(decompose_TS, 
-    c[Variable=At("gross_primary_productivity"),
-        time=Date(2001)..Date(2018,12,31),
-        region="Italy"],
-        #lon=Near(11.3464),lat=Near(46.4946)],
-    indims = indims,
-    outdims = outdims
-)
+
+xmap(decompose_TS, c[Variable=At("gross_primary_productivity"),
+        time=Date(2001)..Date(2018,12,31)] ⊘ :time, output = XOutput(:time, Dim{:Scale}(["Seasonal", "Anomalies"])))
 ```
 
 ```{julia}
@@ -318,7 +307,9 @@ fig
 
 ```{julia}
 #| slideshow: {slide_type: subslide}
-using PyCall
+using PythonCall
+using CondaPkg
+CondaPkg.add("scipy")
 scipyndimage = pyimport("scipy.ndimage")
 ```
 
@@ -340,12 +331,12 @@ gpp_bozen_2010 = c[lon=Near(11.3464),lat=Near(46.4946),
 
 ```{julia}
 #| slideshow: {slide_type: fragment}
-smoothcube = mapCube(gaussian_smooth, gpp_bozen_2010, indims=InDims("time"), outdims=OutDims("time"))
+smoothcube = xmap(gaussian_smooth, gpp_bozen_2010 ⊘ :time, output=XOutput(:time))
 ```
 
 ```{julia}
 #| slideshow: {slide_type: subslide}
-fig, ax, l = lines(datetime2rata.(lookup(gpp_bozen_2010, Ti).data), gpp_bozen_2010[:], label="Original")
+fig, ax, l = lines(lookup(gpp_bozen_2010, Ti), gpp_bozen_2010[:], label="Original")
 lines!(ax,datetime2rata.(lookup(smoothcube, Ti).data), smoothcube[:], label="Smooth")
 ax.xtickformat= dateformatfun
 axislegend(ax)
