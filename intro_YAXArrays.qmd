@@ -331,7 +331,7 @@ gpp_bozen_2010 = c[lon=Near(11.3464),lat=Near(46.4946),
 
 ```{julia}
 #| slideshow: {slide_type: fragment}
-smoothcube = xmap(gaussian_smooth, gpp_bozen_2010 ⊘ :time, output=XOutput(:time))
+smoothcube = xmap(gaussian_smooth, gpp_bozen_2010 ⊘ :time, output=XOutput(gpp_bozen_2010.time))
 ```
 
 ```{julia}
