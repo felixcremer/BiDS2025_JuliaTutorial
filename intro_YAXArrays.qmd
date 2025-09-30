@@ -1,0 +1,489 @@
+---
+title: General introduction to YAXArrays.jl and xmap
+engine: julia
+---
+
+```{julia}
+#| scrolled: true
+#| slideshow: {slide_type: skip}
+using Pkg
+Pkg.offline()
+Pkg.activate(".")
+Pkg.instantiate()
+```
+
+```{julia}
+import Makie: create_dim_conversion
+
+create_dim_conversion(union_typ::Type{Union{Missing,T}}) where {T<:Real} =
+    create_dim_conversion(union_typ.b)
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+using DimensionalData, YAXArrays, Zarr, NetCDF
+using GLMakie
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+
+bucket = "esdl-esdc-v3.0.2"
+store = "esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
+bucketpath = "https://s3.bgc-jena.mpg.de:9000/" * bucket * "/" * store
+path = joinpath(homedir(), "Daten/") * "bids2025_" * store
+ds = open_dataset(zopen(bucketpath,consolidated=true,fill_as_missing=true))
+c = Cube(ds)
+
+#c = Cube(joinpath(tutorialdir,"esdc_subset2.zarr"))
+```
+
+## The `mapCube` function
+
+is a generalization of mapslices, where you can annotate the exact signature of the function to be applied. For example the computation of the `median` over time can be written using `mapCube`. 
+Here one hase to specify the dimension(s) that the user-defined function is going to operate on. For the computation of the median over time the only input dimension is `time` and there are no output dimensions as only a single value is returned. The user defined function passed to `mapCube` always has the signature `f(outputs..., inputs...)` and potentially followd by additional arguments and keyword args. 
+
+## Apply function along single Axis
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+using Statistics 
+function apply_median(xout, xin)
+    x = filter(!ismissing, xin)
+    x = filter(!isnan,x)
+    xout[] = isempty(x) ? missing : median(x)
+end
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+medians = xmap(apply_median, c[Variable=Where(contains("temp"))] ⊘ :time)
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+fig, ax, heat = heatmap(medians[Variable=At("air_temperature_2m"), time=1]);
+colorbar = Colorbar(fig[1,2], heat)
+fig
+```
+
+## Apply function on all elements
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+medians_kelvin = medians .+ 273.15
+```
+
+This function is applied lazily and only computed when the data is worked with. This could be requesting the data via `readcubedata`, saving the data to disk or plotting the data. 
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+fig, ax, heat = heatmap(medians_kelvin[Variable=At("air_temperature_2m"), time=1]);
+colorbar = Colorbar(fig[1,2], heat)
+fig
+```
+
+## Arguments for inner function and output dimensions
+
+Let's make a slightly more complex computation to demonstrate a case where multiple outputs are generated. For examples, imagine we want to normalize every time series (to zero mean and unit variance), but at the same time return the means and variances in a single dataset for later re-use:
+
+## Apply function with multiple output cubes
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+function norm(ts_out, mean_out, std_out, ts_in)
+    x = filter(!ismissing, ts_in)
+
+    tsshort = filter(!isnan,x)
+    if isempty(tsshort)
+        ts_out .= missing
+        mean_out[] = missing
+        std_out[] = missing
+    else
+        mean_out[] = mean(tsshort)
+        std_out[] = std(tsshort)
+        ts_out .= (ts_in .- mean_out[])./std_out[]
+    end
+end
+```
+```{julia}
+ts_norm, mean_ts, std_ts = xmap(norm, c ⊘ :time, output = (XOutput(c.time), XOutput(), XOutput()) )
+```
+
+
+```{julia}
+#| scrolled: true
+#| slideshow: {slide_type: subslide}
+fig, ax, heat = heatmap(std_ts[Variable=At("air_temperature_2m"), time=1]);
+colorbar = Colorbar(fig[1,2], heat)
+fig
+```
+
+## Apply function on moving window
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+function meanfilter(xout, xin)
+    if ismissing(xin[2,2])
+        xout .= missing
+    else
+    xout .= mean(skipmissing(xin))
+    end
+end
+```
+
+
+
+```{julia}
+fig = Figure()
+axorg = Axis(fig[1,1])
+heatmap!(axorg, mean_ts[Variable=At("air_temperature_2m"), time=1])
+```
+
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+
+dlat = dims(c, :lat)
+dlon = dims(c, :lon)
+# This needs a better interface for within index space
+latinterval = MovingIntervals(center=dlat.val, width=3*step(dlat), n=length(dlat), step=step(dlat))
+loninterval = MovingIntervals(center=dlon.val, width=3*step(dlon), n=length(dlon), step=step(dlon))
+meanwindows = windows(mean_ts, :lat=>latinterval, :lon=>loninterval)
+```
+
+```{julia}
+filteredmeans = xmap(meanfilter, meanwindows)
+
+axmean = Axis(fig[2,1])
+heatmap!(axmean, filteredmeans[Variable=At("air_temperature_2m"), time=1])
+```
+
+
+## Define new output dimensions
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+gpp = ds.gross_primary_productivity[
+        time=Date(2001)..Date(2018,12,31), 
+        lon=Near(11.3464),lat=Near(46.4946)]
+fig,ax, pl = lines(gpp, label= "Gross Primary Productivity")
+fig
+```
+
+So far the function applied here were very simple statistics. Just to stress again, that we are running arbitrary Julia code here, so for example if we want to use some package for time series decomposition like `SignalDecomposition.jl`:
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+using SignalDecomposition
+gpp_smooth , gpp_anomalies = readcubedata.(SignalDecomposition.decompose(lookup(gpp, :time), gpp, TimeAnomaly()))
+```
+
+```{julia}
+#| slideshow: {slide_type: skip}
+#function plot_stlres(t, org, stlres)
+    fig = Figure()
+    axorg = Axis(fig[1,1],title="Original")
+    lines!(axorg, gpp, label="Original GPP")
+    axsmooth = Axis(fig[2,1], title="Smoothed Data")
+    lines!(axsmooth, gpp_smooth, label="GPP Smoothed")
+    axanom = Axis(fig[3,1], title="Anomalies")
+    lines!(axanom, gpp_anomalies, label="GPP Anomalies")
+    #lines!(ax, gpp_smooth, label="GPP Smoothed")
+    fig
+```
+
+
+In order to apply this over a full array we define the usual Trio: indims, outdims and the function to be applied. Here we create a new dimension for the output. This means that inside the function the input array `xin` is a vector of length `n_timesteps` and the output is a matrix of size `n_timesteps x 2` 
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+function decompose_TS(xout, xin)
+    any(isnan,xin) && return xout .= missing
+    xsmooth, xanom = SignalDecomposition.decompose(xin)
+    xout[:,1] = xsmooth
+    xout[:,2] = xanom
+end
+```
+
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+
+gpp_subset = ds.gross_primary_productivity[Variable=At("y"),
+        time=Date(2001)..Date(2018,12,31)] 
+gpp_sub_decomposed = xmap(decompose_TS, gpp_subset⊘ :time, output = XOutput(gpp_subset.time, Dim{:Scale}(["Seasonal", "Anomalies"])))
+```
+
+
+You see that the resulting array is a 4-dimensional array including the newly created axis. Lets do some plots:
+
+
+## Use Python or R in inner function
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+using PythonCall
+using CondaPkg
+CondaPkg.add("scipy")
+scipyndimage = pyimport("scipy.ndimage")
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+function gaussian_smooth(xout, xin)
+    missinds = ismissing.(xin)
+    smooth = scipyndimage.gaussian_filter(xin[.!missinds], sigma=4)
+    xout[.!missinds] .= smooth
+end
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+gpp_bozen_2010 = c[lon=Near(11.3464),lat=Near(46.4946),
+    time = DateTime(2010)..DateTime(2011),
+    Variable=At("gross_primary_productivity")]
+```
+
+```{julia}
+#| slideshow: {slide_type: fragment}
+smoothcube = xmap(gaussian_smooth, gpp_subset ⊘ :time, output=XOutput(gpp_subset.time))
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+fig, ax, l = lines(lookup(gpp_bozen_2010, Ti), gpp_bozen_2010[:], label="Original")
+lines!(ax,datetime2rata.(lookup(smoothcube, Ti).data), smoothcube[:], label="Smooth")
+ax.xtickformat= dateformatfun
+axislegend(ax)
+fig
+```
+
+## Parellelize the data processing
+
+## Easy parallelization on multiple cores and multiple nodes¶
+* Use threads on a single computer 
+* Use Distributed on multiple computers
+* Works also with ClusterManagers like SLURM
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+using Distributed, Zarr
+addprocs(4);
+```
+
+```
+#| scrolled: true
+#| slideshow: {slide_type: fragment}
+@everywhere begin 
+    using Pkg
+    Pkg.activate(".")
+    Pkg.instantiate()
+    #Pkg.status()
+    using YAXArrays, Statistics, NetCDF, Zarr
+end
+```
+
+
+# Creating a SAR data cube from GDAL VRTs
+
+
+- Combine multiple Tif files into one data cube for time series analysis 
+- Use Sentinel-1 data as an example
+
+```
+#| slideshow: {slide_type: subslide}
+# Load needed packages
+using Dates
+using ArchGDAL: ArchGDAL as AG
+using YAXArrays
+using DimensionalData
+```
+
+```
+#| slideshow: {slide_type: subslide}
+# Find relevant data
+folder = "/home/fcremer/Daten/Tutorials/s1data"
+pol = "VH"
+allfiles = Iterators.flatten([joinpath.((t[1],), t[3]) for t in walkdir(folder)])
+nonhiddenfiles = Iterators.filter(x->!startswith(basename(x),"."), allfiles)
+filteredfiles = collect(Iterators.filter(x->occursin(pol,x), nonhiddenfiles))
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+# parse the time steps of the data
+using Dates
+function getdate(x,reg = r"[0-9]{8}T[0-9]{6}", df = dateformat"yyyymmddTHHMMSS")
+   m = match(reg,x).match
+   date =DateTime(m,df)
+end
+dates = getdate.(filteredfiles)
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+p = sortperm(dates)
+sdates = dates[p]
+sfiles = filteredfiles[p]
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+"""
+grouptimes(times, timediff=200000)
+Group a sorted vector of time stamps into subgroups
+where the difference between neighbouring elements are less than `timediff` milliseconds.
+This returns the indices of the subgroups as a vector of vectors.
+"""
+function grouptimes(times, timediff=200000)
+   @assert sort(times) == times
+   group = [1]
+   groups = [group]
+
+   for i in 2:length(times)
+      t = times[i]
+      period = t - times[group[end]]
+      if period.value < timediff
+         push!(group, i)
+      else
+         push!(groups, [i])
+         group = groups[end]
+      end
+   end
+   return groups
+end
+
+groupinds = grouptimes(sdates, 200000)
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+datasets = AG.read.(sfiles)
+datasetgroups = [datasets[group] for group in groupinds]
+#We have to save the vrts because the usage of nested vrts is not working as a rasterdataset
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+temp = tempdir()
+outpaths = [joinpath(temp, splitext(basename(sfiles[group][1]))[1] * ".vrt") for group in groupinds]
+vrt_grouped = AG.unsafe_gdalbuildvrt.(datasetgroups)
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+AG.write.(vrt_grouped, outpaths)
+vrt_grouped = AG.read.(outpaths)
+vrt_vv = AG.unsafe_gdalbuildvrt(vrt_grouped, ["-separate"])
+rvrt_vv = AG.RasterDataset(vrt_vv)
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+cube=YAXArray(rvrt_vv)
+#bandnames = AG.GDAL.gdalgetfilelist(vrt_vv.ptr)
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+# Set the timesteps from the bandnames as time axis
+dates_grouped = [sdates[group[begin]] for group in groupinds]
+
+taxis = Ti(dates_grouped)
+cube = DimensionalData.set(cube, Dim{:Band}=>taxis)
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+YAXArrays.Cubes.cubechunks(cube)
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+newchunked = setchunks(cube, (X=400,Y=400, Band=2))
+```
+
+```{julia}
+#| slideshow: {slide_type: fragment}
+YAXArrays.Cubes.cubechunks(newchunked)
+```
+
+```{julia}
+#| slideshow: {slide_type: subslide}
+savecube(newchunked, "s1data.nc")
+```
+
+
+# 3. YAXArrays table-interface
+
+Similar to Rasters.jl, also YAXArrays provides a method to represent labelled arrays as a table. However, as everything in YAXArrays, lazy is the default as well for tables. So the CubeTable constructor will not load any data but will provide an iterator over table chunks that one can use for further analysis. Here it is guaranteed that these subtables fit into memory and they can be distributed for parallel data loading and processing
+
+```{julia}
+using Revise, YAXArrays, Zarr, Plots
+ds = open_dataset("./esdc_subset2.zarr")
+
+countryds = open_dataset("./countries.zarr")
+countryds.countries.properties["labels"] = Dict(parse(Int,k)=>v for (k,v) in countryds.countries.properties["labels"])
+countryds.countries.properties["Name"] = "Country"
+countryds.countries
+```
+
+```{julia}
+
+tab = CubeTable(gpp = ds.gross_primary_productivity, tair = ds.air_temperature_2m, country = countryds.countries)
+```
+
+It is possible to loop over or index into a table iterator to get one of the subtables or . Note that even here nothing is loaded yet. 
+
+```{julia}
+subtab = tab[42]
+```
+
+Only when accessing a specific column, the data is actually loaded
+
+```{julia}
+subtab.tair
+```
+
+But since a subtable implements the Tables interface we can also convert to a DataFrame
+
+```{julia}
+using DataFrames
+DataFrame(subtab)
+```
+
+These tables can be used for aggregating data. Suppose we want to compute the mean temperature by country, YAXArrays provides some tools to do this in connection with OnlineStats.jl and WeightedOnlineStats.jl
+
+```{julia}
+using WeightedOnlineStats, OnlineStats
+#using Distributed
+#addprocs(8)
+```
+
+```{julia}
+#@everywhere begin
+    using Pkg
+    Pkg.activate(".")
+    using YAXArrays, Zarr, Plots, WeightedOnlineStats, OnlineStats, Dates
+#end
+```
+
+```{julia}
+@time r = cubefittable(tab, WeightedMean, :tair, by=(:country,),weight=(r->cosd(r.lat)))
+```
+
+```{julia}
+DataFrame(first(CubeTable(mtemp = r)))
+```
+
+```{julia}
+@everywhere splitmonth(r) = month(r.time)
+r = cubefittable(tab, WeightedMean, :tair, by=(:country,splitmonth),weight=(r->cosd(r.lat)))
+```
+
+```{julia}
+rmprocs(workers())
+```
+
+
