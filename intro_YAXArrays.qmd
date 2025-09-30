@@ -478,12 +478,12 @@ DataFrame(first(CubeTable(mtemp = r)))
 ```
 
 ```{julia}
-@everywhere splitmonth(r) = month(r.time)
+# @everywhere splitmonth(r) = month(r.time)
 r = cubefittable(tab, WeightedMean, :tair, by=(:country,splitmonth),weight=(r->cosd(r.lat)))
 ```
 
 ```{julia}
-rmprocs(workers())
+# rmprocs(workers())
 ```
 
 
