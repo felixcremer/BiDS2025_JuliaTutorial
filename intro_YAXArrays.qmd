@@ -30,9 +30,9 @@ using GLMakie
 
 bucket = "esdl-esdc-v3.0.2"
 store = "esdc-16d-2.5deg-46x72x1440-3.0.2.zarr"
-path = "https://s3.bgc-jena.mpg.de:9000/" * bucket * "/" * store
+bucketpath = "https://s3.bgc-jena.mpg.de:9000/" * bucket * "/" * store
 path = joinpath(homedir(), "Daten/") * "bids2025_" * store
-ds = open_dataset(zopen(path,consolidated=true,fill_as_missing=false))
+ds = open_dataset(zopen(bucketpath,consolidated=true,fill_as_missing=true))
 c = Cube(ds)
 
 #c = Cube(joinpath(tutorialdir,"esdc_subset2.zarr"))
@@ -206,102 +206,18 @@ function decompose_TS(xout, xin)
 end
 ```
 
-```{julia}
-#| slideshow: {slide_type: skip}
-using Logging
-Logging.disable_logging(Warn)
-```
 
 ```{julia}
 #| slideshow: {slide_type: subslide}
 
-xmap(decompose_TS, c[Variable=At("gross_primary_productivity"),
-        time=Date(2001)..Date(2018,12,31)] ⊘ :time, output = XOutput(:time, Dim{:Scale}(["Seasonal", "Anomalies"])))
+gpp_subset = ds.gross_primary_productivity[Variable=At("y"),
+        time=Date(2001)..Date(2018,12,31)] 
+gpp_sub_decomposed = xmap(decompose_TS, gpp_subset⊘ :time, output = XOutput(gpp_subset.time, Dim{:Scale}(["Seasonal", "Anomalies"])))
 ```
 
-```{julia}
-#| slideshow: {slide_type: skip}
-Logging.disable_logging(Debug)
-```
-
-```{julia}
-#| slideshow: {slide_type: skip}
-fig, axseas, heatyax = lines( datetime2rata.(lookup(dec, Ti).data),
-    dec[lon=Near(11.3464),lat=Near(46.4946)].data[:,1])
-fig
-```
-
-```{julia}
-#| slideshow: {slide_type: skip}
-lines!(datetime2rata.(lookup(dec, Ti).data),
-    stlres.decomposition[!, :Seasonal])
-fig
-```
 
 You see that the resulting array is a 4-dimensional array including the newly created axis. Lets do some plots:
 
-```{julia}
-#| slideshow: {slide_type: skip}
-#Compute variance and plot a map of seasonal variance
-scalevar = mapslices(var,dec,dims="Time")
-scalerange = mapslices(x->maximum(x) - minimum(x), dec, dims="Time")
-```
-
-```{julia}
-#| slideshow: {slide_type: skip}
-heatmap(DimArray(scalerange[scale=At("Seasonal")]))
-```
-
-```{julia}
-#| slideshow: {slide_type: skip}
-heatmap(DimArray(scalevar[scale=At("Remainder")]))
-```
-
-## Interpolate data on finer grids
-
-```{julia}
-#| slideshow: {slide_type: subslide}
-using Revise,EarthDataLab, DimensionalData,Rasters, Interpolations
-#c = esdd()
-ds = open_dataset(joinpath(tutorialdir,"esdc_subset2.zarr"))
-tair = ds.air_temperature_2m
-
-newlons = -179.95:0.1:179.95
-newlats = -89.95:0.1:89.95
-
-#Option 1:
-tair1 = spatialinterp(tair,newlons,newlats, order =Quadratic())
-
-tair1[lon=10..15, lat=50..60]
-
-tair1italy = tair1[region="Italy",time=Near(DateTime(2015,6,1))]
-```
-
-```{julia}
-#| slideshow: {slide_type: subslide}
-heatmap(DimArray(tair[region="Italy", time=Near(DateTime(2015,6,1))]))
-```
-
-```{julia}
-#| slideshow: {slide_type: subslide}
-figinterp, interpax, interpheat = heatmap(DimArray(tair1italy))
-```
-
-```{julia}
-#| scrolled: false
-#| slideshow: {slide_type: subslide}
-using Dates
-newtimes = DateTime(1979):Day(1):DateTime(2021,12,31)
-tair2 = interpolatecube(tair,Dict(:time=>newtimes), order=Dict(:time=>Quadratic()))
-tair2Jan = tair2[time=DateTime(2001)..DateTime(2002,1,31), lon=Near(11.3464),lat=Near(46.4946)]
-tairJan = tair[time=DateTime(2001)..DateTime(2002,1,31), lon=Near(11.3464),lat=Near(46.4946)]
-
-fig, ax, pl = scatter(datetime2rata.(lookup(tair2Jan, Ti).data), tair2Jan.data[:],label="Interpolated")
-scatter!(datetime2rata.(lookup(tairJan, Ti).data), tairJan.data[:], label="Original")
-ax.xtickformat = dateformatfun
-axislegend(ax)
-fig
-```
 
 ## Use Python or R in inner function
 
@@ -331,7 +247,7 @@ gpp_bozen_2010 = c[lon=Near(11.3464),lat=Near(46.4946),
 
 ```{julia}
 #| slideshow: {slide_type: fragment}
-smoothcube = xmap(gaussian_smooth, gpp_bozen_2010 ⊘ :time, output=XOutput(gpp_bozen_2010.time))
+smoothcube = xmap(gaussian_smooth, gpp_subset ⊘ :time, output=XOutput(gpp_subset.time))
 ```
 
 ```{julia}
@@ -356,7 +272,7 @@ using Distributed, Zarr
 addprocs(4);
 ```
 
-```{julia}
+```
 #| scrolled: true
 #| slideshow: {slide_type: fragment}
 @everywhere begin 
@@ -375,7 +291,7 @@ end
 - Combine multiple Tif files into one data cube for time series analysis 
 - Use Sentinel-1 data as an example
 
-```{julia}
+```
 #| slideshow: {slide_type: subslide}
 # Load needed packages
 using Dates
@@ -384,7 +300,7 @@ using YAXArrays
 using DimensionalData
 ```
 
-```{julia}
+```
 #| slideshow: {slide_type: subslide}
 # Find relevant data
 folder = "/home/fcremer/Daten/Tutorials/s1data"
