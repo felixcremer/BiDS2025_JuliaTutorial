@@ -38,10 +38,21 @@ curl -fsSL https://install.julialang.org | sh
 |:------|:---------|
 | 09:00 |  Introduction to Julia | 
 | 09:30 |  Julia Geo Ecosystem |
-| 10:00 |  Raster Data Loading |
-| 10:30 |  Coffee Break 
-| 10:50 |  Raster data analysis
-| 11:10 | Hands-On Challenge
+| 10:00 |  Data Loading |
+| 10:30 |  Coffee Break |
+| 10:50 |  Data analysis |
+| 11:10 | Hands-On Challenge |
 
 
 This timeline is purely approximate and given for indication purpose only. We will adjust depending on the audience. There will be additional breaks (5 minutes) regularly and time for questions during the workshop.
+
+## Development Tools
+We recommend VS Code with the Julia extension installed.
+
+1. Install VS code from [Visual Studio Code](https://code.visualstudio.com/){target="_blank"}
+2. Install the Julia extension: Search for "Julia" in extensions
+
+Other options that <a style="color: orange;">we won't use</a> :
+
+- [Plot Notebooks](https://plutojl.org){target="_blank"} (Interactive/reactive documents)
+- [Jupyter notebooks](https://jupyter.org){target="_blank"}

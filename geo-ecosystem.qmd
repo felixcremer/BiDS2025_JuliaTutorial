@@ -1,0 +1,16 @@
+---
+title: "Julia Geo Ecosystem"
+---
+
+# Packages
+
+A typical workflow might involve the following packages:
+
+- DimensionalData.jl
+- Rasters.jl
+- Zarr.jl
+- YAXArrays.jl
+- GeoStats.jl
+- GeoInterface.jl
+- GeoMakie.jl
+- Tyler.jl

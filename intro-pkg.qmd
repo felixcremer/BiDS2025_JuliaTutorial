@@ -2,8 +2,20 @@
 title: Introduction to the Package Manager
 ---
 
-This is only a small glimpse in the Julia package manager. 
+This is only a small glimpse into the Julia package manager. 
 For an in depth intro see [Pkg.jl and Julia Environments for Beginners](https://jkrumbiegel.com/pages/2022-08-26-pkg-introduction/).
+
+## Essentials
+
+- `add PackageName` - Install a package
+- `rm PackageName` - Remove a package
+- `up` or `update` - Update all packages
+- `resolve` - Determine versions of all packages specified in Project.toml and Manifest.toml`
+- `instantiate` - Install all packages from Project.toml
+- `st` or `status` - Show installed packages
+- `activate .` - Activate environment in current directory
+- `?` - Get help
+
 
 # REPL package manager mode
 
@@ -23,7 +35,7 @@ From now on we will assume you are in the pkg REPL mode
 
 - get some help
 ```julia
-help
+? # help
 ```
 
 ## Activating your environment
@@ -36,7 +48,7 @@ activate .
 
 - See what is installed
 ```julia
-st
+st # status
 ```
 - Download all installed packages
 ```julia
@@ -63,3 +75,5 @@ up PackageName
 - [Pkg.jl documentation]()
 - [Pkg.jl and Julia Environments for Beginners](https://jkrumbiegel.com/pages/2022-08-26-pkg-introduction/)
 - [Modern Julia workflows on environments](https://modernjuliaworkflows.org/writing/#environments)
+
+For a more in depth introduction and more tips and tricks see the [REPL Mastery workshop](https://github.com/miguelraz/REPLMasteryWorkshop) from JuliaCon 2022.
