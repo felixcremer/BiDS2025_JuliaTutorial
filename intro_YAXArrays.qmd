@@ -7,7 +7,7 @@ engine: julia
 #| scrolled: true
 #| slideshow: {slide_type: skip}
 using Pkg
-Pkg.offline()
+# Pkg.offline()
 Pkg.activate(".")
 Pkg.instantiate()
 ```
@@ -22,7 +22,7 @@ create_dim_conversion(union_typ::Type{Union{Missing,T}}) where {T<:Real} =
 ```{julia}
 #| slideshow: {slide_type: subslide}
 using DimensionalData, YAXArrays, Zarr, NetCDF
-using GLMakie
+using CairoMakie
 ```
 
 ```{julia}
@@ -470,16 +470,16 @@ using WeightedOnlineStats, OnlineStats
 ```
 
 ```{julia}
-@time r = cubefittable(tab, WeightedMean, :tair, by=(:country,),weight=(r->cosd(r.lat)))
+# @time r = cubefittable(tab, WeightedMean, :tair, by=(:country,),weight=(r->cosd(r.lat)))
 ```
 
 ```{julia}
-DataFrame(first(CubeTable(mtemp = r)))
+# DataFrame(first(CubeTable(mtemp = r)))
 ```
 
 ```{julia}
 # @everywhere splitmonth(r) = month(r.time)
-r = cubefittable(tab, WeightedMean, :tair, by=(:country,splitmonth),weight=(r->cosd(r.lat)))
+# r = cubefittable(tab, WeightedMean, :tair, by=(:country,splitmonth),weight=(r->cosd(r.lat)))
 ```
 
 ```{julia}

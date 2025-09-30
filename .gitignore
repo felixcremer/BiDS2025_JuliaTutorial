@@ -3,3 +3,4 @@
 _site/
 .vscode
 Manifest.toml
+.CondaPkg

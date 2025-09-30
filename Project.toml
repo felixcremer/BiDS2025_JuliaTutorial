@@ -1,9 +1,7 @@
 [deps]
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 CondaPkg = "992eb4ea-22a4-4c89-a5bb-47a3300528ab"
 DimensionalData = "0703355e-b756-11e9-17c0-8b28908087d0"
-DiskArrayEngine = "2d4b2e14-ccd6-4284-b8b0-2378ace7c126"
-DiskArrays = "3c3547ce-8d99-4f5e-a174-61eb10b00ae3"
-GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 NetCDF = "30363a11-5582-574a-97bb-aa9a979735b9"
 PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
