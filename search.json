@@ -122,7 +122,7 @@
     "href": "index.html#schedule",
     "title": "Julia for large scale geospatial analysis",
     "section": "2 Schedule",
-    "text": "2 Schedule\n\n\n\nTime\nTopic\n\n\n\n\n14:00\nIntroduction to Julia\n\n\n14:30\nJulia Geo Ecosystem\n\n\n15:00\nRaster Data Loading\n\n\n15:30\nCoffee Break\n\n\n15:50\nRaster data analysis\n\n\n16:10\nHands-On Challenge\n\n\n\nThis timeline is purely approximate and given for indication purpose only. We will adjust depending on the audience. There will be additional breaks (5 minutes) regularly and time for questions during the workshop.",
+    "text": "2 Schedule\n\n\n\nTime\nTopic\n\n\n\n\n09:00\nIntroduction to Julia\n\n\n09:30\nJulia Geo Ecosystem\n\n\n10:00\nData Loading\n\n\n10:30\nCoffee Break\n\n\n10:50\nData analysis\n\n\n11:10\nHands-On Challenge\n\n\n\nThis timeline is purely approximate and given for indication purpose only. We will adjust depending on the audience. There will be additional breaks (5 minutes) regularly and time for questions during the workshop.",
     "crumbs": [
       "Home"
     ]
