@@ -10,6 +10,8 @@ using Pkg
 # Pkg.offline()
 Pkg.activate(".")
 Pkg.instantiate()
+Pkg.add(url="https://github.com/meggart/DiskArrayEngine.jl.git", rev="main")
+Pkg.add(url="https://github.com/JuliaDataCubes/YAXArrays.jl.git", rev="master")
 ```
 
 ```{julia}
