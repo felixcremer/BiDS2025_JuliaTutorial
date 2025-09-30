@@ -36,12 +36,12 @@ curl -fsSL https://install.julialang.org | sh
 
 | Time | Topic |
 |:------|:---------|
-| 14:00 |  Introduction to Julia | 
-| 14:30 |  Julia Geo Ecosystem |
-| 15:00 |  Raster Data Loading |
-| 15:30 |  Coffee Break 
-| 15:50 |  Raster data analysis
-| 16:10 | Hands-On Challenge
+| 09:00 |  Introduction to Julia | 
+| 09:30 |  Julia Geo Ecosystem |
+| 10:00 |  Data Loading |
+| 10:30 |  Coffee Break |
+| 10:50 |  Data analysis |
+| 11:10 | Hands-On Challenge |
 
 
 This timeline is purely approximate and given for indication purpose only. We will adjust depending on the audience. There will be additional breaks (5 minutes) regularly and time for questions during the workshop.
